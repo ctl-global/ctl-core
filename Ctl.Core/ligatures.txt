@@ -1,0 +1,13 @@
+﻿AE,Æ
+ae,æ
+OE,Œ
+oe,œ
+IJ,Ĳ
+ij,ĳ
+ue,ᵫ
+f‌f,ﬀ
+f‌i,ﬁ
+f‌l,ﬂ
+f‌f‌i,ﬃ
+f‌f‌l,ﬄ
+st,ﬆ
