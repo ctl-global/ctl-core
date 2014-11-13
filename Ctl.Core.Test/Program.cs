@@ -14,18 +14,30 @@ namespace Ctl.Core.Test
         {
             var strings = new[]
             {
-                "12345",
-                "12345a",
-                "a12345",
-                "12345-6789",
-                "a12345-6789",
-                "12345-6789a"
+                "",
+                "  ",
+                "foo",
+                "foo ",
+                "foo  ",
+                " foo",
+                "  foo",
+                " foo ",
+                "  foo  ",
+                "foo bar",
+                "foo  bar",
+                " foo  bar baz ",
+                " foo bar  baz "
             };
 
             foreach (var s in strings)
             {
-                Console.WriteLine("{0}: {1}", s, new ZipCodeAttribute().IsValid(s));
+                Console.WriteLine("\"{0}\", \"{1}\"", s, Normalize(s));
             }
+        }
+
+        public static string Normalize(string s)
+        {
+            return string.Join(" ", s.Tokenize((str, i) => char.IsWhiteSpace(str, i)));
         }
     }
 }
