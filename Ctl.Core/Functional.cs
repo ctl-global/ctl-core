@@ -60,27 +60,27 @@ namespace Ctl
 
             return new FunctionalEqualityComparer<T>(comparer, hasher);
         }
-    }
 
-    sealed class FunctionalEqualityComparer<T> : IEqualityComparer<T>
-    {
-        readonly Func<T, T, bool> comparer;
-        readonly Func<T, int> hasher;
-
-        public FunctionalEqualityComparer(Func<T, T, bool> comparer, Func<T, int> hasher)
+        sealed class FunctionalEqualityComparer<T> : IEqualityComparer<T>
         {
-            this.comparer = comparer;
-            this.hasher = hasher;
-        }
+            readonly Func<T, T, bool> comparer;
+            readonly Func<T, int> hasher;
 
-        public bool Equals(T x, T y)
-        {
-            return comparer(x, y);
-        }
+            public FunctionalEqualityComparer(Func<T, T, bool> comparer, Func<T, int> hasher)
+            {
+                this.comparer = comparer;
+                this.hasher = hasher;
+            }
 
-        public int GetHashCode(T obj)
-        {
-            return hasher(obj);
+            public bool Equals(T x, T y)
+            {
+                return comparer(x, y);
+            }
+
+            public int GetHashCode(T obj)
+            {
+                return hasher(obj);
+            }
         }
     }
 }
