@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ctl.Extensions
@@ -46,7 +47,7 @@ namespace Ctl.Extensions
         public static T GetValue<T>(this DbDataReader reader, string name)
         {
             int ordinal = reader.GetOrdinal(name);
-            
+
             if (reader.IsDBNull(ordinal))
             {
                 throw new InvalidCastException(string.Format("Unable to read value for '{0}', database returned null.", name));
@@ -80,6 +81,79 @@ namespace Ctl.Extensions
         {
             int ordinal = reader.GetOrdinal(name);
             return reader.IsDBNull(ordinal) ? defaultValue : (T)reader.GetValue(ordinal);
+        }
+
+        /// <summary>
+        /// Enumerates POCO models from a database reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">A database reader to read from.</param>
+        /// <returns>A collection of POCO models.</returns>
+        public static IEnumerable<T> AsValuesEnumerable<T>(this DbDataReader reader)
+        {
+            DbModelReader<T> r = new DbModelReader<T>();
+
+            while (reader.Read())
+            {
+                yield return r.Read(reader);
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously enumerates POCO models from a database reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">A database reader to read from.</param>
+        /// <returns>A collection of POCO models.</returns>
+        public static IAsyncEnumerable<T> AsValuesEnumerableAsync<T>(this DbDataReader reader)
+        {
+            return AsyncEx.Create(
+                () => new DbModelReader<T>(),
+                (s, ct) => reader.ReadAsync(ct),
+                s => s.Read(reader));
+        }
+
+        /// <summary>
+        /// Reads POCO models from a database reader into a List.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">A database reader to read from.</param>
+        /// <returns>A collection of POCO models.</returns>
+        public static List<T> ToList<T>(this DbDataReader reader)
+        {
+            if (reader == null) throw new ArgumentNullException("reader");
+
+            List<T> list = new List<T>();
+            DbModelReader<T> r = new DbModelReader<T>();
+
+            while (reader.Read())
+            {
+                list.Add(r.Read(reader));
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Asynchronously reads POCO models from a database reader into a List.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">A database reader to read from.</param>
+        /// <param name="token"></param>
+        /// <returns>A collection of POCO models.</returns>
+        public static async Task<List<T>> ToList<T>(this DbDataReader reader, CancellationToken token)
+        {
+            if (reader == null) throw new ArgumentNullException("reader");
+
+            List<T> list = new List<T>();
+            DbModelReader<T> r = new DbModelReader<T>();
+
+            while (await reader.ReadAsync(token).ConfigureAwait(false))
+            {
+                list.Add(r.Read(reader));
+            }
+
+            return list;
         }
     }
 }

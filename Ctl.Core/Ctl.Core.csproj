@@ -55,6 +55,7 @@
     <Compile Include="CombiningStream.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Db.cs" />
+    <Compile Include="DbModelReader.cs" />
     <Compile Include="Extensions\AsyncEnumerableExtensions.cs" />
     <Compile Include="AsyncEx.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
