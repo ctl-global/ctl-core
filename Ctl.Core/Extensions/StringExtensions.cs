@@ -188,6 +188,17 @@ namespace Ctl.Extensions
         }
 
         /// <summary>
+        /// Removes whitespace from beginning and end of the string, and folds multiple spaces between tokens into single spaces.
+        /// </summary>
+        /// <param name="s">The string to normalize.</param>
+        /// <returns>If non-null, a string with normalized whitespace. Otherwise, an empty string.</returns>
+        /// <remarks>This can be thought of as how HTML treats display of whitespace.</remarks>
+        public static string NormalizeWhitespace(this string s)
+        {
+            return s != null ? string.Join(" ", Tokenize(s, (str, i) => char.IsWhiteSpace(str, i))) : string.Empty;
+        }
+
+        /// <summary>
         /// Splits a string into tokens.
         /// </summary>
         /// <param name="s">The string to split.</param>

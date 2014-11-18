@@ -83,11 +83,11 @@
     <Compile Include="HamSort.cs" />
     <Compile Include="HashUtils.cs" />
     <Compile Include="Identity.cs" />
+    <Compile Include="NormalizingComparer.cs" />
     <Compile Include="PathEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyStream.cs" />
     <Compile Include="RemoteTask.cs" />
-    <Compile Include="ValidationException.cs" />
     <Compile Include="Validation\AlphaNumericAttribute.cs" />
     <Compile Include="Validation\CountryCodeAttribute.cs" />
     <Compile Include="Validation\NonEmptyAttribute.cs" />
@@ -99,7 +99,6 @@
     <Compile Include="Validation\StateCodeAttribute.cs" />
     <Compile Include="Validation\UnicodeCategoryAttribute.cs" />
     <Compile Include="Validation\ZipCodeAttribute.cs" />
-    <Compile Include="ValidatorEx.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ctl.Core.nuspec" />
