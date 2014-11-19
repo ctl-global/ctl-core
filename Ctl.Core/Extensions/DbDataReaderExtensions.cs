@@ -89,7 +89,7 @@ namespace Ctl.Extensions
         /// <typeparam name="T">The data type to read.</typeparam>
         /// <param name="reader">A database reader to read from.</param>
         /// <returns>A collection of POCO models.</returns>
-        public static IEnumerable<T> AsValuesEnumerable<T>(this DbDataReader reader)
+        public static IEnumerable<T> AsPocoEnumerable<T>(this DbDataReader reader)
         {
             DbModelReader<T> r = new DbModelReader<T>();
 
@@ -105,7 +105,7 @@ namespace Ctl.Extensions
         /// <typeparam name="T">The data type to read.</typeparam>
         /// <param name="reader">A database reader to read from.</param>
         /// <returns>A collection of POCO models.</returns>
-        public static IAsyncEnumerable<T> AsValuesEnumerableAsync<T>(this DbDataReader reader)
+        public static IAsyncEnumerable<T> AsPocoEnumerableAsync<T>(this DbDataReader reader)
         {
             return AsyncEx.Create(
                 () => new DbModelReader<T>(),
@@ -119,7 +119,7 @@ namespace Ctl.Extensions
         /// <typeparam name="T">The data type to read.</typeparam>
         /// <param name="reader">A database reader to read from.</param>
         /// <returns>A collection of POCO models.</returns>
-        public static List<T> ToList<T>(this DbDataReader reader)
+        public static List<T> ToPocoList<T>(this DbDataReader reader)
         {
             if (reader == null) throw new ArgumentNullException("reader");
 
@@ -141,7 +141,7 @@ namespace Ctl.Extensions
         /// <param name="reader">A database reader to read from.</param>
         /// <param name="token"></param>
         /// <returns>A collection of POCO models.</returns>
-        public static async Task<List<T>> ToList<T>(this DbDataReader reader, CancellationToken token)
+        public static async Task<List<T>> ToPocoList<T>(this DbDataReader reader, CancellationToken token)
         {
             if (reader == null) throw new ArgumentNullException("reader");
 
