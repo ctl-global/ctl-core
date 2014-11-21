@@ -92,6 +92,7 @@
     <Compile Include="Validation\CountryCodeAttribute.cs" />
     <Compile Include="Validation\NonEmptyAttribute.cs" />
     <Compile Include="Validation\NumericAttribute.cs" />
+    <Compile Include="Validation\ObjectValidationException.cs" />
     <Compile Include="Validation\PrintableAsciiAttribute.cs" />
     <Compile Include="Validation\PrintableAttribute.cs" />
     <Compile Include="Validation\PrintableLatinAttribute.cs" />

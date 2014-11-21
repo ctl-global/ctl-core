@@ -77,7 +77,7 @@ namespace Ctl
             try
             {
                 con = NewConnection(connectionStringName);
-                
+
                 TConnection ret = con as TConnection;
 
                 if (ret == null)
