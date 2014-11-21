@@ -87,7 +87,7 @@ namespace Ctl.Validation
     public class PositiveAttribute : SignValidationAttribute
     {
         public PositiveAttribute(bool allowStrings = false) : base("The field {0} must be greater than zero.", allowStrings) { }
-        public override bool IsValid(object value) { return (GetSign(value) ?? -1) > 0; }
+        public override bool IsValid(object value) { return value == null || (GetSign(value) ?? -1) > 0; }
     }
 
     /// <summary>
@@ -97,6 +97,6 @@ namespace Ctl.Validation
     public class NonNegativeAttribute : SignValidationAttribute
     {
         public NonNegativeAttribute(bool allowStrings) : base("The field {0} must be greater than or equal to zero.", allowStrings) { }
-        public override bool IsValid(object value) { return (GetSign(value) ?? -1) >= 0; }
+        public override bool IsValid(object value) { return value == null || (GetSign(value) ?? -1) >= 0; }
     }
 }
