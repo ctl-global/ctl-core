@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -227,6 +228,61 @@ namespace Ctl.Extensions
             {
                 yield return s.Substring(startPos);
             }
+        }
+
+        /// <summary>
+        /// Truncates a string to a specific number of grapheme clusters (actual visual glyphs).
+        /// Special care is taken to not break surrogate pairs and combining characters.
+        /// This may result in a string that takes more than <param name="len"/> code units of storage.
+        /// </summary>
+        /// <param name="str">The string to truncate.</param>
+        /// <param name="length">The number of grapheme clusters to truncate to.</param>
+        /// <param name="ellipsis">If true, an ellipsis will be appended in the even of truncation.</param>
+        /// <returns>A truncated string, or the original string if no truncation was necessary.</returns>
+        public static string VisualTruncate(this string str, int length, bool ellipsis = false)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException("length", "Length must not be negative.");
+            }
+
+            if (str == null || str.Length <= length)
+            {
+                return str;
+            }
+
+            // Surrogate pairs will not be split.
+            // Combining characters will not be split from their base character.
+
+            bool hasBase = false;
+
+            for (int i = 0; i < str.Length; i += char.IsSurrogatePair(str, i) ? 2 : 1)
+            {
+                switch (char.GetUnicodeCategory(str, i))
+                {
+                    case UnicodeCategory.NonSpacingMark:
+                    case UnicodeCategory.SpacingCombiningMark:
+                    case UnicodeCategory.EnclosingMark:
+                        if (hasBase)
+                        {
+                            // combining characters do not count toward length if they've got a base character before them.
+                            continue;
+                        }
+                        break;
+                    default:
+                        hasBase = true;
+                        break;
+                }
+
+                if (length-- == 0)
+                {
+                    str = str.Substring(0, i);
+                    if (ellipsis) str += "…";
+                    return str;
+                }
+            }
+
+            return str;
         }
     }
 }
