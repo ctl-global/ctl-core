@@ -30,6 +30,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ctl
@@ -96,9 +97,51 @@ namespace Ctl
         }
     }
 
-    static class DbModelReader
+    /// <summary>
+    /// Utility methods for reading POCO models from a database.
+    /// </summary>
+    public static class DbModelReader
     {
-        public static Tuple<LambdaExpression, string[]> CreateReadDelegate(Type t)
+        /// <summary>
+        /// Reads all records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A list of models.</returns>
+        public static List<T> ReadAll<T>(DbDataReader reader)
+        {
+            List<T> list = new List<T>();
+            var model = new DbModelReader<T>();
+
+            while (reader.Read())
+            {
+                list.Add(model.Read(reader));
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Reads all records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A list of models.</returns>
+        public static async Task<List<T>> ReadAllAsync<T>(DbDataReader reader, CancellationToken token)
+        {
+            List<T> list = new List<T>();
+            var model = new DbModelReader<T>();
+
+            while (await reader.ReadAsync(token).ConfigureAwait(false))
+            {
+                list.Add(model.Read(reader));
+            }
+
+            return list;
+        }
+
+        internal static Tuple<LambdaExpression, string[]> CreateReadDelegate(Type t)
         {
             List<Expression> readBody = new List<Expression>();
 
