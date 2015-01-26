@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -110,6 +111,8 @@ namespace Ctl
         /// <returns>A list of models.</returns>
         public static List<T> ReadAll<T>(DbDataReader reader)
         {
+            if (reader == null) throw new ArgumentNullException("reader");
+
             List<T> list = new List<T>();
             var model = new DbModelReader<T>();
 
@@ -130,6 +133,8 @@ namespace Ctl
         /// <returns>A list of models.</returns>
         public static async Task<List<T>> ReadAllAsync<T>(DbDataReader reader, CancellationToken token)
         {
+            if (reader == null) throw new ArgumentNullException("reader");
+
             List<T> list = new List<T>();
             var model = new DbModelReader<T>();
 
@@ -139,6 +144,93 @@ namespace Ctl
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// Enumerates records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A sequence of models.</returns>
+        public static IEnumerable<T> Enumerate<T>(DbDataReader reader)
+        {
+            return new DbModelEnumerable<T>(reader);
+        }
+
+        /// <summary>
+        /// Enumerates records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A sequence of models.</returns>
+        public static IAsyncEnumerable<T> EnumerateAsync<T>(DbDataReader reader)
+        {
+            return new DbModelEnumerable<T>(reader);
+        }
+
+        sealed class DbModelEnumerable<T> : IEnumerable<T>, IAsyncEnumerable<T>, IEnumerator<T>, IAsyncEnumerator<T>
+        {
+            readonly DbDataReader reader;
+            readonly DbModelReader<T> model = new DbModelReader<T>();
+
+            public DbModelEnumerable(DbDataReader reader)
+            {
+                if (reader == null) throw new ArgumentNullException("reader");
+                this.reader = reader;
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return this;
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return this;
+            }
+
+            IAsyncEnumerator<T> IAsyncEnumerable<T>.GetEnumerator()
+            {
+                return this;
+            }
+
+            public T Current { get; private set; }
+
+            public void Dispose()
+            {
+            }
+
+            object System.Collections.IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            public bool MoveNext()
+            {
+                if (reader.Read())
+                {
+                    Current = model.Read(reader);
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Reset()
+            {
+                throw new NotImplementedException();
+            }
+
+            public async Task<bool> MoveNext(CancellationToken cancellationToken)
+            {
+                if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    Current = model.Read(reader);
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         internal static Tuple<LambdaExpression, string[]> CreateReadDelegate(Type t)
