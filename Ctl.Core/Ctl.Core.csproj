@@ -82,6 +82,7 @@
     <Compile Include="Graph.cs" />
     <Compile Include="HamSort.cs" />
     <Compile Include="HashUtils.cs" />
+    <Compile Include="Security\Hotp.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="NormalizingComparer.cs" />
     <Compile Include="Optional.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="ProxyStream.cs" />
     <Compile Include="RemoteTask.cs" />
     <Compile Include="ResourcePool.cs" />
+    <Compile Include="Security\Totp.cs" />
     <Compile Include="Validation\AlphaNumericAttribute.cs" />
     <Compile Include="Validation\CountryCodeAttribute.cs" />
     <Compile Include="Validation\NonEmptyAttribute.cs" />
