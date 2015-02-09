@@ -40,7 +40,7 @@ namespace Ctl.Security
         /// </summary>
         const long UnixEpoch = 621355968000000000;
 
-        long div;
+        readonly long div;
 
         /// <summary>
         /// Creates an instance of the Totp class using the HMAC-SHA1 algorithm.

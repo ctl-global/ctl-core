@@ -37,8 +37,8 @@ namespace Ctl.Security
     {
         protected const string DefaultHmac = "HMACSHA1";
 
-        HMAC hmac;
-        long mod;
+        readonly HMAC hmac;
+        readonly long mod;
 
         /// <summary>
         /// Creates an instance of the Hotp class using the HMAC-SHA1 algorithm.
@@ -165,11 +165,7 @@ namespace Ctl.Security
         /// </summary>
         public void Dispose()
         {
-            if (hmac != null)
-            {
-                hmac.Dispose();
-                hmac = null;
-            }
+            hmac.Dispose();
         }
     }
 }
