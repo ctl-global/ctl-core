@@ -53,7 +53,7 @@ namespace Ctl.Extensions
                 throw new InvalidCastException(string.Format("Unable to read value for '{0}', database returned null.", name));
             }
 
-            return (T)reader.GetValue(ordinal);
+            return GetTypedValue<T>(reader, name, ordinal);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Ctl.Extensions
         public static T GetValueOrDefault<T>(this DbDataReader reader, string name)
         {
             int ordinal = reader.GetOrdinal(name);
-            return reader.IsDBNull(ordinal) ? default(T) : (T)reader.GetValue(ordinal);
+            return reader.IsDBNull(ordinal) ? default(T) : GetTypedValue<T>(reader, name, ordinal);
         }
 
         /// <summary>
@@ -80,7 +80,23 @@ namespace Ctl.Extensions
         public static T GetValueOrDefault<T>(this DbDataReader reader, string name, T defaultValue)
         {
             int ordinal = reader.GetOrdinal(name);
-            return reader.IsDBNull(ordinal) ? defaultValue : (T)reader.GetValue(ordinal);
+            return reader.IsDBNull(ordinal) ? defaultValue : GetTypedValue<T>(reader, name, ordinal);
+        }
+
+        /// <summary>
+        /// Extracts a strongly-typed value from the reader, throwing an InvalidOperationException if the type is incorrect.
+        /// </summary>
+        static T GetTypedValue<T>(DbDataReader reader, string name, int ordinal)
+        {
+            try
+            {
+                return (T)reader.GetValue(ordinal);
+            }
+            catch (InvalidCastException ex)
+            {
+                Type expectedType = reader.GetFieldType(ordinal);
+                throw new InvalidOperationException(string.Format("Unable to read value of type '{0}' from column '{1}'. Expected type '{2}'.", typeof(T), name, expectedType), ex);
+            }
         }
 
         /// <summary>
