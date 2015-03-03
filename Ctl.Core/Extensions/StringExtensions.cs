@@ -318,5 +318,84 @@ namespace Ctl.Extensions
             int takeLen = char.IsSurrogatePair(s, 0) ? 2 : 1;
             return s.Substring(0, takeLen).ToUpper(culture) + s.Substring(takeLen).ToLower(culture);
         }
+
+        /// <summary>
+        /// Tests if a string is upper-case (contains at least one upper-case letter and has no lower-case letters.
+        /// </summary>
+        /// <param name="s">The string to test.</param>
+        /// <returns>If the string is upper-case, true.</returns>
+        public static bool IsUpper(this string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+
+            bool hasUpper = false;
+
+            for (int i = 0; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            {
+                if (char.IsLower(s, i))
+                {
+                    return false;
+                }
+
+                if (!hasUpper && char.IsUpper(s, i))
+                {
+                    hasUpper = true;
+                }
+            }
+
+            return hasUpper;
+        }
+
+        /// <summary>
+        /// Tests if a string is lower-case (contains at least one lower-case letter and has no upper-case letters.
+        /// </summary>
+        /// <param name="s">The string to test.</param>
+        /// <returns>If the string is lower-case, true.</returns>
+        public static bool IsLower(this string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+
+            bool hasLower = false;
+
+            for (int i = 0; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            {
+                if (char.IsUpper(s, i))
+                {
+                    return false;
+                }
+
+                if (!hasLower && char.IsLower(s, i))
+                {
+                    hasLower = true;
+                }
+            }
+
+            return hasLower;
+        }
+
+        /// <summary>
+        /// Tests if a string is capitalized (that is, the first letter is upper-case and subsequent letters are lower-case.)
+        /// </summary>
+        /// <param name="s">The string to test.</param>
+        /// <returns>If the string is capitalized, true.</returns>
+        public static bool IsCapitalized(this string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+
+            if (!char.IsUpper(s, 0))
+            {
+                return false;
+            }
+
+            for (int i = char.IsSurrogatePair(s, 0) ? 2 : 1; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            {
+                if (char.IsUpper(s, i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }
