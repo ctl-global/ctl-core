@@ -284,5 +284,39 @@ namespace Ctl.Extensions
 
             return str;
         }
+
+        /// <summary>
+        /// Capitalizes the first letter of a string using the current culture, and lowercase the rest of it.
+        /// </summary>
+        /// <param name="s">The string to capitalize.</param>
+        /// <returns>A capitalized string.</returns>
+        public static string CapitalizeWord(this string s)
+        {
+            return CapitalizeWord(s, CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Capitalizes the first letter of a string using the invariant culture, and lowercase the rest of it.
+        /// </summary>
+        /// <param name="s">The string to capitalize.</param>
+        /// <returns>A capitalized string.</returns>
+        public static string CapitalizeWordInvariant(this string s)
+        {
+            return CapitalizeWord(s, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Capitalizes the first letter of a string, and lowercase the rest of it.
+        /// </summary>
+        /// <param name="s">The string to capitalize.</param>
+        /// <param name="culture">The culture to use.</param>
+        /// <returns>A capitalized string.</returns>
+        public static string CapitalizeWord(this string s, CultureInfo culture)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+
+            int takeLen = char.IsSurrogatePair(s, 0) ? 2 : 1;
+            return s.Substring(0, takeLen).ToUpper(culture) + s.Substring(takeLen).ToLower(culture);
+        }
     }
 }
