@@ -247,9 +247,10 @@ namespace Ctl
             readBody.Add(Expression.Assign(valueVar, Expression.New(t)));
 
             var info = (from m in t.GetMembers()
+                        where m.GetCustomAttribute<NotMappedAttribute>() == null
                         let p = m as PropertyInfo
                         let f = m as FieldInfo
-                        where (p != null || f != null) && m.GetCustomAttribute<NotMappedAttribute>() == null
+                        where ((p != null && p.GetSetMethod() != null) || f != null)
                         let column = m.GetCustomAttribute<ColumnAttribute>()
                         select new
                         {
