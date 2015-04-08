@@ -104,6 +104,30 @@ namespace Ctl
     public static class DbModelReader
     {
         /// <summary>
+        /// Executes a command and reads its first result set into a list.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="cmd">The command to execute and read from</param>
+        /// <returns>A list of models.</returns>
+        public static List<T> ReadAll<T>(DbCommand cmd)
+        {
+            List<T> list = new List<T>();
+            var model = new DbModelReader<T>();
+
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    list.Add(model.Read(reader));
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
         /// Reads all records available from the reader.
         /// </summary>
         /// <typeparam name="T">The data type to read.</typeparam>
@@ -119,6 +143,31 @@ namespace Ctl
             while (reader.Read())
             {
                 list.Add(model.Read(reader));
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Executes a command and reads its first result set into a list.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="cmd">The command to execute and read from</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A list of models.</returns>
+        public static async Task<List<T>> ReadAllAsync<T>(DbCommand cmd, CancellationToken token)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            List<T> list = new List<T>();
+            var model = new DbModelReader<T>();
+
+            using(var reader = await cmd.ExecuteReaderAsync(token).ConfigureAwait(false))
+            {
+                while (await reader.ReadAsync(token).ConfigureAwait(false))
+                {
+                    list.Add(model.Read(reader));
+                }
             }
 
             return list;
