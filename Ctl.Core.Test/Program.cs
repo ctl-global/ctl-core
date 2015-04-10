@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ctl.Extensions;
 using Ctl.Validation;
+using System.Security.Cryptography;
 
 namespace Ctl.Core.Test
 {
@@ -12,32 +13,18 @@ namespace Ctl.Core.Test
     {
         static void Main(string[] args)
         {
-            var strings = new[]
-            {
-                "",
-                "  ",
-                "foo",
-                "foo ",
-                "foo  ",
-                " foo",
-                "  foo",
-                " foo ",
-                "  foo  ",
-                "foo bar",
-                "foo  bar",
-                " foo  bar baz ",
-                " foo bar  baz "
-            };
+            var source = new ECDiffieHellmanCng(256);
+            var target = new ECDiffieHellmanCng(256);
 
-            foreach (var s in strings)
-            {
-                Console.WriteLine("\"{0}\", \"{1}\"", s, Normalize(s));
-            }
-        }
+            byte[] orig = Encoding.UTF8.GetBytes("Hello, world!");
+            byte[] enc = Security.ECIES.AuthenticatedEncrypt(source, target.PublicKey, orig, 0, orig.Length);
+            byte[] dec = Security.ECIES.AuthenticatedDecrypt(target, source.PublicKey, enc, 0, enc.Length);
+            string decstr = Encoding.UTF8.GetString(dec);
 
-        public static string Normalize(string s)
-        {
-            return string.Join(" ", s.Tokenize((str, i) => char.IsWhiteSpace(str, i)));
+            Console.WriteLine("Original:       {0}", Convert.ToBase64String(orig));
+            Console.WriteLine("Encoded:        {0}", Convert.ToBase64String(enc));
+            Console.WriteLine("Decoded:        {0}", Convert.ToBase64String(dec));
+            Console.WriteLine("Decoded String: {0}", decstr);
         }
     }
 }

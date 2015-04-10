@@ -41,6 +41,8 @@ namespace Ctl.Security
     /// </remarks>
     public static class ECIES
     {
+        static readonly byte[] empty = new byte[0];
+
         /// <summary>
         /// Encrypts data with authentication against the source's key.
         /// </summary>
@@ -78,6 +80,11 @@ namespace Ctl.Security
             if (data == null) throw new ArgumentNullException("data");
             if (offset < 0) throw new ArgumentOutOfRangeException("offset");
             if (length < 0 || checked(offset + length) > data.Length) throw new ArgumentOutOfRangeException("length");
+
+            if (sharedAuthKey == null)
+            {
+                sharedAuthKey = empty;
+            }
 
             // generate an ephemeral key and shared secret.
             // note: the first 8 bytes of ephemeralPublicKey are constant to indicate blob format;
@@ -121,18 +128,17 @@ namespace Ctl.Security
 
             byte[] mac;
 
-            byte[] hmacKey = new byte[32 + (sharedAuthKey != null ? sharedAuthKey.Length : 0)];
+            byte[] hmacKey = new byte[32];
             Array.Copy(sharedSecret, 32, hmacKey, 0, 32);
-
-            if (sharedAuthKey != null)
-            {
-                Array.Copy(sharedAuthKey, 0, hmacKey, 32, sharedAuthKey.Length);
-            }
 
             using (HMAC hmac = HMAC.Create())
             {
                 hmac.Key = hmacKey;
-                mac = hmac.ComputeHash(encrypted, 0, encrypted.Length);
+
+                hmac.TransformBlock(encrypted, 0, encrypted.Length, null, 0);
+                hmac.TransformFinalBlock(sharedAuthKey, 0, sharedAuthKey.Length);
+
+                mac = hmac.Hash;
             }
 
             Debug.Assert(mac.Length == 20);
@@ -144,6 +150,13 @@ namespace Ctl.Security
             Array.Copy(ephemeralPublicKey, 8, msg, 0, 64);
             Array.Copy(mac, 0, msg, 64, 20);
             Array.Copy(encrypted, 0, msg, 84, encrypted.Length);
+
+            // clear our secret data.
+
+            Array.Clear(sharedSecret, 0, sharedSecret.Length);
+            Array.Clear(key, 0, key.Length);
+            Array.Clear(iv, 0, iv.Length);
+            Array.Clear(hmacKey, 0, hmacKey.Length);
 
             return msg;
         }
@@ -187,13 +200,17 @@ namespace Ctl.Security
             if (length < 0 || checked(offset + length) > data.Length) throw new ArgumentOutOfRangeException("length");
             if (length < 84) throw new ArgumentOutOfRangeException("length", length, "Length is not large enough to fit an encrypted message.");
 
-            // calculate the shared secret.
-            byte[] sharedSecret;
+            if (sharedAuthKey == null)
+            {
+                sharedAuthKey = empty;
+            }
 
+            // calculate the shared secret.
+
+            byte[] sharedSecret;
             byte[] ephemeralPublicKeyBlob = new byte[72];
 
             // this is the blob format identifier.
-
             ephemeralPublicKeyBlob[0] = 69;
             ephemeralPublicKeyBlob[1] = 67;
             ephemeralPublicKeyBlob[2] = 75;
@@ -218,18 +235,17 @@ namespace Ctl.Security
 
             byte[] mac;
 
-            byte[] hmacKey = new byte[32 + (sharedAuthKey != null ? sharedAuthKey.Length : 0)];
+            byte[] hmacKey = new byte[32];
             Array.Copy(sharedSecret, 32, hmacKey, 0, 32);
-
-            if (sharedAuthKey != null)
-            {
-                Array.Copy(sharedAuthKey, 0, hmacKey, 32, sharedAuthKey.Length);
-            }
 
             using (HMAC hmac = HMAC.Create())
             {
                 hmac.Key = hmacKey;
-                mac = hmac.ComputeHash(data, offset + 84, data.Length - 84);
+
+                hmac.TransformBlock(data, offset + 84, data.Length - 84, null, 0);
+                hmac.TransformFinalBlock(sharedAuthKey, 0, sharedAuthKey.Length);
+
+                mac = hmac.Hash;
             }
 
             if (!mac.SequenceEqual(data.Skip(offset + 64).Take(20)))
@@ -245,6 +261,8 @@ namespace Ctl.Security
             byte[] iv = new byte[16];
             Array.Copy(sharedSecret, 16, iv, 0, 16);
 
+            byte[] decrypted;
+
             using (Aes aes = Aes.Create())
             {
                 aes.Key = key;
@@ -252,9 +270,18 @@ namespace Ctl.Security
 
                 using (ICryptoTransform dec = aes.CreateDecryptor())
                 {
-                    return dec.TransformFinalBlock(data, 84, length - 84);
+                    decrypted = dec.TransformFinalBlock(data, 84, length - 84);
                 }
             }
+
+            // clear our secret key.
+
+            Array.Clear(sharedSecret, 0, sharedSecret.Length);
+            Array.Clear(hmacKey, 0, hmacKey.Length);
+            Array.Clear(key, 0, key.Length);
+            Array.Clear(iv, 0, iv.Length);
+
+            return decrypted;
         }
     }
 }
