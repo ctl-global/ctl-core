@@ -316,7 +316,6 @@ namespace Ctl
 
                 Type memberBaseType = Nullable.GetUnderlyingType(info[i].MemberType) ?? info[i].MemberType;
 
-
                 MethodInfo getMethod;
 
                 if (!readerMethods.TryGetValue(memberBaseType, out getMethod))
@@ -325,6 +324,17 @@ namespace Ctl
                 }
 
                 Expression getValue = Expression.Call(readerParam, getMethod, indexVar);
+                ParameterExpression exception = Expression.Parameter(typeof(InvalidCastException), "ex");
+
+                getValue = Expression.TryCatch(getValue,
+                    Expression.Catch(exception,
+                    Expression.Throw(Expression.New(typeof(InvalidCastException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
+                        Expression.Call(typeof(string).GetMethod("Concat", new[] { typeof(string), typeof(string), typeof(string) }),
+                            Expression.Constant("Unable to cast from '"),
+                            Expression.Property(Expression.Call(readerParam, typeof(DbDataReader).GetMethod("GetFieldType"), indexVar), "Name"),
+                            Expression.Constant("' to '" + memberBaseType.Name + "' for member '" + info[i].Member.Name + "'. See InnerException for details.")
+                            ),
+                        exception), getValue.Type)));
 
                 if (memberBaseType != info[i].MemberType)
                 {
@@ -342,9 +352,9 @@ namespace Ctl
                     Expression isMissing = Expression.Equal(indexVar, negOne);
                     Expression isNull = Expression.Call(readerParam, typeof(DbDataReader).GetMethod("IsDBNull"), indexVar);
                     Expression shouldThrow = Expression.OrElse(isMissing, isNull);
-                    Expression exception = Expression.New(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }), Expression.Constant(string.Format("Required member '{0}' is missing or null from database.", info[i].Member.Name)));
+                    Expression newException = Expression.New(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }), Expression.Constant(string.Format("Required member '{0}' is missing or null from database.", info[i].Member.Name)));
 
-                    readBody.Add(Expression.IfThen(shouldThrow, Expression.Throw(exception)));
+                    readBody.Add(Expression.IfThen(shouldThrow, Expression.Throw(newException)));
                     readBody.Add(getValue);
                 }
                 else
@@ -364,7 +374,7 @@ namespace Ctl
             BlockExpression body = Expression.Block(new[] { valueVar, indexVar }, readBody);
 
             Type delegateType = typeof(ReadDbModelFunc<>).MakeGenericType(t);
-            LambdaExpression funcExp = Expression.Lambda(delegateType, body, readerParam, indexesParam);
+            LambdaExpression funcExp = Expression.Lambda(delegateType, body, "ReadModel", new[] { readerParam, indexesParam });
 
             return Tuple.Create(funcExp, columnNames);
         }
