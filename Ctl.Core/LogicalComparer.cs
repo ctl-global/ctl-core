@@ -31,7 +31,7 @@ namespace Ctl
 {
     /// <summary>
     /// Compares strings logically, comparing digits as numbers rather than characters.
-    /// This means "1" will sort before "20".
+    /// This means "2" will sort before "10".
     /// </summary>
     public class LogicalStringComparer : StringComparer
     {
