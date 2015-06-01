@@ -315,15 +315,22 @@ namespace Ctl
                 columnNames[i] = info[i].Name;
 
                 Type memberBaseType = Nullable.GetUnderlyingType(info[i].MemberType) ?? info[i].MemberType;
+                Type enumBaseType = memberBaseType.IsEnum ? Enum.GetUnderlyingType(memberBaseType) : null;
 
                 MethodInfo getMethod;
 
-                if (!readerMethods.TryGetValue(memberBaseType, out getMethod))
+                if (!readerMethods.TryGetValue(enumBaseType ?? memberBaseType, out getMethod))
                 {
-                    getMethod = typeof(DbDataReader).GetMethod("GetFieldValue").MakeGenericMethod(memberBaseType);
+                    getMethod = typeof(DbDataReader).GetMethod("GetFieldValue").MakeGenericMethod(enumBaseType ?? memberBaseType);
                 }
 
                 Expression getValue = Expression.Call(readerParam, getMethod, indexVar);
+
+                if (enumBaseType != null)
+                {
+                    getValue = Expression.Convert(getValue, memberBaseType);
+                }
+
                 ParameterExpression exception = Expression.Parameter(typeof(InvalidCastException), "ex");
 
                 getValue = Expression.TryCatch(getValue,
@@ -338,6 +345,7 @@ namespace Ctl
 
                 if (memberBaseType != info[i].MemberType)
                 {
+                    // for nullable values, construct the nullable type.
                     getValue = Expression.New(info[i].MemberType.GetConstructor(new[] { memberBaseType }), getValue);
                 }
 
