@@ -23,7 +23,10 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ctl
 {
@@ -98,7 +101,75 @@ namespace Ctl
                 }
                 throw;
             }
+        }
 
+
+        /// <summary>
+        /// Executes a command and reads its first result set into a list.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="cmd">The command to execute and read from</param>
+        /// <returns>A list of models.</returns>
+        public static List<T> ReadAll<T>(DbCommand cmd)
+        {
+            return DbModelReader.ReadAll<T>(cmd);
+        }
+
+        /// <summary>
+        /// Reads all records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A list of models.</returns>
+        public static List<T> ReadAll<T>(DbDataReader reader)
+        {
+            return DbModelReader.ReadAll<T>(reader);
+        }
+
+        /// <summary>
+        /// Executes a command and reads its first result set into a list.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="cmd">The command to execute and read from</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A list of models.</returns>
+        public static Task<List<T>> ReadAllAsync<T>(DbCommand cmd, CancellationToken token)
+        {
+            return DbModelReader.ReadAllAsync<T>(cmd, token);
+        }
+
+        /// <summary>
+        /// Reads all records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A list of models.</returns>
+        public static Task<List<T>> ReadAllAsync<T>(DbDataReader reader, CancellationToken token)
+        {
+            return DbModelReader.ReadAllAsync<T>(reader, token);
+        }
+
+        /// <summary>
+        /// Enumerates records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A sequence of models.</returns>
+        public static IEnumerable<T> Enumerate<T>(DbDataReader reader)
+        {
+            return DbModelReader.Enumerate<T>(reader);
+        }
+
+        /// <summary>
+        /// Enumerates records available from the reader.
+        /// </summary>
+        /// <typeparam name="T">The data type to read.</typeparam>
+        /// <param name="reader">The reader to read from</param>
+        /// <returns>A sequence of models.</returns>
+        public static IAsyncEnumerable<T> EnumerateAsync<T>(DbDataReader reader)
+        {
+            return DbModelReader.EnumerateAsync<T>(reader);
         }
     }
 }
