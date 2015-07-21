@@ -295,7 +295,7 @@ namespace Ctl
 
             readBody.Add(Expression.Assign(valueVar, Expression.New(t)));
 
-            var info = (from m in t.GetMembers()
+            var info = (from m in t.GetMembers(BindingFlags.Instance | BindingFlags.Public)
                         where m.GetCustomAttribute<NotMappedAttribute>() == null
                         let p = m as PropertyInfo
                         let f = m as FieldInfo
