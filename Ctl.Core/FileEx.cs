@@ -63,12 +63,9 @@ namespace Ctl
                 {
                     return await Task.Run(func).ConfigureAwait(false);
                 }
-                catch (IOException ex)
+                catch (IOException ex) when((ex.HResult & 0xFFFF) == 32)
                 {
-                    if ((ex.HResult & 0xFFFF) != 32)
-                    {
-                        throw ex;
-                    }
+                    // do nothing.
                 }
 
                 await Task.Delay(delay, token).ConfigureAwait(false);
