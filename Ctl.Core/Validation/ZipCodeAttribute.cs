@@ -60,6 +60,6 @@ namespace Ctl.Validation
             return re.IsMatch(s);
         }
 
-        static readonly Regex re = new Regex(@"^\d{5}(?:(?:-|‒)\d{4})?$", RegexOptions.Compiled);
+        static readonly Regex re = new Regex(@"^\d{5}(?:(?:-|‒)?\d{4})?$", RegexOptions.Compiled);
     }
 }
