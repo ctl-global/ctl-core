@@ -41,11 +41,41 @@ namespace Ctl.Extensions
         /// <summary>
         /// Trims all whitespace from a string, returning null if the result is empty.
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">A string to trim.</param>
         [Pure]
         public static string TrimToNull(this string s)
         {
             return string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+        }
+
+        /// <summary>
+        /// Trims all whitespace from a string, returning null if the result is empty.
+        /// If the string is over <paramref name="length"/> characters long, it is truncated.
+        /// </summary>
+        /// <param name="s">A string to truncate.</param>
+        /// <param name="length">The maximum length of the string.</param>
+        /// <returns>A new string which has at most <paramref name="length"/> characters.</returns>
+        [Pure]
+        public static string TruncateToLength(this string s, int length)
+        {
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), nameof(length) + " must be greater or equal to zero.");
+            }
+
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return null;
+            }
+
+            s = s.Trim();
+
+            if (s.Length > length)
+            {
+                s = s.Substring(0, length);
+            }
+
+            return s;
         }
 
         /// <summary>
