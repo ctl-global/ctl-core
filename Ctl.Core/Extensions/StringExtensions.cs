@@ -39,7 +39,7 @@ namespace Ctl.Extensions
     public static class StringExtensions
     {
         /// <summary>
-        /// Trims all whitespace from a string, returning null if the result is empty.
+        /// Trims leading and trailing whitespace from a string, returning null if the result is empty.
         /// </summary>
         /// <param name="s">A string to trim.</param>
         [Pure]
@@ -49,7 +49,7 @@ namespace Ctl.Extensions
         }
 
         /// <summary>
-        /// Trims all whitespace from a string, returning null if the result is empty.
+        /// Trims leading and trailing whitespace from a string, returning null if the result is empty.
         /// If the string is over <paramref name="length"/> characters long, it is truncated.
         /// </summary>
         /// <param name="s">A string to truncate.</param>
