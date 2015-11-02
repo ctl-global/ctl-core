@@ -123,7 +123,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static async Task<List<TRet>> Execute<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
+        public static async Task<List<TRet>> ExecuteAsync<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
