@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (c) 2014, CTL Global, Inc.
+    Copyright (c) 2015, CTL Global, Inc.
     Copyright (c) 2013, iD Commerce + Logistics
     All rights reserved.
 
@@ -22,9 +22,11 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
+using Microsoft.SqlServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -56,21 +58,25 @@ namespace Ctl.Extensions
     {
         public static object CreateAddParameters(Type valueType)
         {
+            // this gets the Enumerable.Any<SqlDataRecord>() extension method.
+            // ugly, right?
+
+            MethodInfo anyFunc = (from m in typeof(Enumerable).GetMethods()
+                                  where m.Name == "Any"
+                                  let a = m.GetGenericArguments()
+                                  let p = m.GetParameters()
+                                  where a.Length == 1 && p.Length == 1 && p[0].ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>) && p[0].ParameterType.GenericTypeArguments[0] == a[0]
+                                  select m).Single().MakeGenericMethod(typeof(SqlDataRecord));
+
+            Expression dbnull = Expression.Convert(Expression.Field(null, typeof(DBNull), "Value"), typeof(object));
+
             ParameterExpression cmdParam = Expression.Parameter(typeof(DbCommand), "cmd");
             ParameterExpression valueParam = Expression.Parameter(valueType, "value");
 
-            Expression cmdParamsVar = Expression.Variable(typeof(DbParameterCollection), "cmdParams");
-
-            Expression paramVar = Expression.Variable(typeof(DbParameter), "param");
-            Expression paramName = Expression.Property(paramVar, "ParameterName");
-            Expression paramValue = Expression.Property(paramVar, "Value");
-
-            Expression createParam = Expression.Assign(paramVar, Expression.Call(cmdParam, typeof(DbCommand).GetMethod("CreateParameter", Type.EmptyTypes)));
-            Expression addParam = Expression.Call(cmdParamsVar, typeof(DbParameterCollection).GetMethod("Add", new[] { typeof(object) }), paramVar);
+            MethodInfo addParam = typeof(DbCommandExtensions).GetMethod("AddParameterWithValue", new[] { typeof(DbCommand), typeof(string), typeof(object) });
+            MethodInfo addTvp = typeof(DbCommandExtensions).GetMethod("AddParameterWithValue", new[] { typeof(SqlCommand), typeof(string), typeof(string), typeof(IEnumerable<SqlDataRecord>) });
 
             List<Expression> expressions = new List<Expression>();
-
-            expressions.Add(Expression.Assign(cmdParamsVar, Expression.Property(cmdParam, "Parameters")));
 
             foreach (var member in valueType.GetMembers())
             {
@@ -93,10 +99,21 @@ namespace Ctl.Extensions
                     continue;
                 }
 
-                expressions.Add(createParam);
-                expressions.Add(Expression.Assign(paramName, Expression.Constant(member.Name)));
-                expressions.Add(Expression.Assign(paramVar, value));
-                expressions.Add(addParam);
+                if (value.Type == typeof(TableValuedParameter))
+                {
+                    expressions.Add(Expression.Call(addTvp,
+                        Expression.Convert(cmdParam, typeof(SqlCommand)),
+                        Expression.Constant(member.Name),
+                        Expression.Property(value, "TypeName"),
+                        Expression.Property(value, "Records")));
+                }
+                else
+                {
+                    expressions.Add(Expression.Call(addParam,
+                        cmdParam,
+                        Expression.Constant(member.Name),
+                        Expression.Convert(value, typeof(object))));
+                }
             }
 
             BlockExpression block = Expression.Block(expressions);

@@ -24,6 +24,7 @@
 
 using Microsoft.SqlServer.Server;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -166,7 +167,7 @@ namespace Ctl.Extensions
             DbParameter p = cmd.CreateParameter();
 
             p.ParameterName = name;
-            p.Value = value;
+            p.Value = value ?? DBNull.Value;
 
             cmd.Parameters.Add(p);
 
@@ -186,6 +187,13 @@ namespace Ctl.Extensions
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (name == null) throw new ArgumentNullException("name");
             if (typeName == null) throw new ArgumentNullException("typeName");
+
+            if (value?.Any() != true)
+            {
+                // do not add a parameter if there are no values.
+                // TVPs default to an empty table if the parameter is not specified.
+                return null;
+            }
 
             SqlParameter p = cmd.CreateParameter();
 

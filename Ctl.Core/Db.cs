@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (c) 2014, CTL Global, Inc.
+    Copyright (c) 2015, CTL Global, Inc.
     Copyright (c) 2013, iD Commerce + Logistics
     All rights reserved.
 
@@ -22,9 +22,11 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
+using Microsoft.SqlServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -170,6 +172,17 @@ namespace Ctl
         public static IAsyncEnumerable<T> EnumerateAsync<T>(DbDataReader reader)
         {
             return DbModelReader.EnumerateAsync<T>(reader);
+        }
+
+        /// <summary>
+        /// Defines a table-valued parameter.
+        /// </summary>
+        public static TableValuedParameter Table(this SqlConnection con, string typeName, IEnumerable<SqlDataRecord> records)
+        {
+            // con is used solely to ensure the TVP is used only with SQL Server.
+            if (con == null) throw new ArgumentNullException(nameof(con));
+
+            return new TableValuedParameter(typeName, records);
         }
     }
 }

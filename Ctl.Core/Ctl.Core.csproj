@@ -104,6 +104,7 @@
     <Compile Include="RemoteTask.cs" />
     <Compile Include="ResourcePool.cs" />
     <Compile Include="Security\Totp.cs" />
+    <Compile Include="TableValuedParameter.cs" />
     <Compile Include="Validation\AlphaNumericAttribute.cs" />
     <Compile Include="Validation\CountryCodeAttribute.cs" />
     <Compile Include="Validation\NonEmptyAttribute.cs" />
