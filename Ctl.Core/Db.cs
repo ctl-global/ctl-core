@@ -181,8 +181,31 @@ namespace Ctl
         {
             // con is used solely to ensure the TVP is used only with SQL Server.
             if (con == null) throw new ArgumentNullException(nameof(con));
+            if (typeName == null) throw new ArgumentNullException(nameof(typeName));
 
             return new TableValuedParameter(typeName, records);
+        }
+
+        /// <summary>
+        /// Defines a table-valued parameter.
+        /// </summary>
+        public static TableValuedParameter Table<T>(this SqlConnection con, string typeName, SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        {
+            if (metadata == null) throw new ArgumentNullException(nameof(metadata));
+            if (transform == null) throw new ArgumentNullException(nameof(transform));
+
+            return Table(con, typeName, records != null ? BuildTvp(metadata, transform, records) : null);
+        }
+
+        static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        {
+            SqlDataRecord r = new SqlDataRecord(metadata);
+
+            foreach (T record in records)
+            {
+                transform(r, record);
+                yield return r;
+            }
         }
     }
 }

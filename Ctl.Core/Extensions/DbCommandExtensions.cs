@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Collections.Concurrent;
 
 namespace Ctl.Extensions
 {
@@ -213,12 +214,28 @@ namespace Ctl.Extensions
         /// <typeparam name="T">The type containing parameter values to add.</typeparam>
         /// <param name="cmd">The database command to add a parameter to.</param>
         /// <param name="value">The object to create parameters from.</param>
-        public static void AddParameters<T>(this DbCommand cmd, T value)
+        public static void AddParameters(this DbCommand cmd, object value)
         {
-            if (cmd == null) throw new ArgumentNullException("cmd");
-            if (value == null) throw new ArgumentNullException("value");
+            if (cmd == null) throw new ArgumentNullException(nameof(cmd));
+            if (value == null) throw new ArgumentNullException(nameof(value));
 
-            DbDynamicMethods<T>.AddParameters(cmd, value);
+            Type t = value.GetType();
+
+            Action<DbCommand, object> addParameterFunc;
+            if (!addParametersCache.TryGetValue(t, out addParameterFunc))
+            {
+                addParameterFunc = (Action<DbCommand, object>)typeof(DbCommandExtensions).GetMethod("AddParametersImpl", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).MakeGenericMethod(t).CreateDelegate(typeof(Action<DbCommand, object>));
+                addParametersCache.TryAdd(t, addParameterFunc);
+            }
+
+            addParameterFunc(cmd, value);
         }
+
+        static void AddParametersImpl<T>(DbCommand cmd, object obj)
+        {
+            DbDynamicMethods<T>.AddParameters(cmd, (T)obj);
+        }
+
+        static readonly ConcurrentDictionary<Type, Action<DbCommand, object>> addParametersCache = new ConcurrentDictionary<Type, Action<DbCommand, object>>();
     }
 }

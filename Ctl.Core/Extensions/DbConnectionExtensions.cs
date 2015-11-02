@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -33,7 +34,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Creates a new command and initializes its parameters.
         /// </summary>
-        public static DbCommand CreateCommand<TParameters>(this DbConnection con, string commandText, CommandType commandType, TParameters parameters)
+        public static DbCommand CreateCommand(this DbConnection con, string commandText, CommandType commandType, object parameters)
         {
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
@@ -68,7 +69,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static int Execute<TParameters>(this DbConnection con, string commandText, CommandType commandType, TParameters parameters)
+        public static int Execute(this DbConnection con, string commandText, CommandType commandType, object parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
@@ -79,7 +80,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static async Task<int> ExecuteAsync<TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
+        public static async Task<int> ExecuteAsync(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, object parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
@@ -90,7 +91,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a command.
         /// </summary>
-        public static List<TRet> Fetch<TRet>(this DbConnection con, string commandText, CommandType commandType)
+        public static List<TRet> Execute<TRet>(this DbConnection con, string commandText, CommandType commandType)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType))
             {
@@ -101,7 +102,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a command.
         /// </summary>
-        public static async Task<List<TRet>> FetchAsync<TRet>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token)
+        public static async Task<List<TRet>> ExecuteAsync<TRet>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType))
             {
@@ -112,7 +113,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static List<TRet> Fetch<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, TParameters parameters)
+        public static List<TRet> Fetch<TRet>(this DbConnection con, string commandText, CommandType commandType, object parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
@@ -123,7 +124,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static async Task<List<TRet>> FetchAsync<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
+        public static async Task<List<TRet>> ExecuteAsync<TRet>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, object parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
