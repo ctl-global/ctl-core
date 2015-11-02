@@ -90,7 +90,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a command.
         /// </summary>
-        public static List<TRet> Execute<TRet>(this DbConnection con, string commandText, CommandType commandType)
+        public static List<TRet> Fetch<TRet>(this DbConnection con, string commandText, CommandType commandType)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType))
             {
@@ -101,7 +101,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a command.
         /// </summary>
-        public static async Task<List<TRet>> ExecuteAsync<TRet>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token)
+        public static async Task<List<TRet>> FetchAsync<TRet>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType))
             {
@@ -112,7 +112,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static List<TRet> Execute<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, TParameters parameters)
+        public static List<TRet> Fetch<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, TParameters parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
@@ -123,7 +123,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Executes a parameterized command.
         /// </summary>
-        public static async Task<List<TRet>> ExecuteAsync<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
+        public static async Task<List<TRet>> FetchAsync<TRet, TParameters>(this DbConnection con, string commandText, CommandType commandType, CancellationToken token, TParameters parameters)
         {
             using (DbCommand cmd = con.CreateCommand(commandText, commandType, parameters))
             {
