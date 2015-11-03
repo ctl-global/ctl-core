@@ -189,12 +189,12 @@ namespace Ctl
         /// <summary>
         /// Defines a table-valued parameter.
         /// </summary>
-        public static TableValuedParameter Table<T>(this SqlConnection con, string typeName, SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        public static TableValuedParameter Table<T>(this SqlConnection con, DbTable table, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
         {
-            if (metadata == null) throw new ArgumentNullException(nameof(metadata));
+            if (table == null) throw new ArgumentNullException(nameof(table));
             if (transform == null) throw new ArgumentNullException(nameof(transform));
 
-            return Table(con, typeName, records != null ? BuildTvp(metadata, transform, records) : null);
+            return Table(con, table.TypeName, records != null ? BuildTvp(table.MetaData, transform, records) : null);
         }
 
         static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
