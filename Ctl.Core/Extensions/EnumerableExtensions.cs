@@ -373,7 +373,7 @@ namespace Ctl.Extensions
         /// <returns>A sequence of items.</returns>
         public static IEnumerable<T> OrderedIntersect<T, TKey>(this IEnumerable<IEnumerable<T>> collections, Func<T, TKey> keyExtractor, IComparer<TKey> keyComparer)
         {
-            return MultiImpl(collections, keyExtractor, keyComparer, (left, right, e, c) => OrderedIntersect(left, right, e, c));
+            return ApplyMultiple(collections, keyExtractor, keyComparer, (left, right, e, c) => OrderedIntersect(left, right, e, c));
         }
 
         /// <summary>
@@ -468,7 +468,7 @@ namespace Ctl.Extensions
         /// <returns>A sequence of items.</returns>
         public static IEnumerable<T> OrderedUnion<T, TKey>(this IEnumerable<IEnumerable<T>> collections, Func<T, TKey> keyExtractor, IComparer<TKey> keyComparer)
         {
-            return MultiImpl(collections, keyExtractor, keyComparer, (left, right, e, c) => OrderedUnion(left, right, e, c));
+            return ApplyMultiple(collections, keyExtractor, keyComparer, (left, right, e, c) => OrderedUnion(left, right, e, c));
         }
 
         /// <summary>
@@ -586,7 +586,7 @@ namespace Ctl.Extensions
         /// <summary>
         /// Recursively applies a merge function to a collection of sequences, flattening them into a single sequence.
         /// </summary>
-        static IEnumerable<T> MultiImpl<T, TKey>(this IEnumerable<IEnumerable<T>> collections, Func<T, TKey> keyExtractor, IComparer<TKey> keyComparer, Func<IEnumerable<T>, IEnumerable<T>, Func<T, TKey>, IComparer<TKey>, IEnumerable<T>> func)
+        static IEnumerable<T> ApplyMultiple<T, TKey, TComparer>(this IEnumerable<IEnumerable<T>> collections, Func<T, TKey> keyExtractor, TComparer keyComparer, Func<IEnumerable<T>, IEnumerable<T>, Func<T, TKey>, TComparer, IEnumerable<T>> func)
         {
             Debug.Assert(collections != null);
             Debug.Assert(keyExtractor != null);
@@ -729,6 +729,29 @@ namespace Ctl.Extensions
                 yield return mergeFunc(parts);
                 parts.Clear();
             }
+        }
+
+        /// <summary>
+        /// Intersects multiple collections using the default comparer.
+        /// </summary>
+        /// <typeparam name="T">The type to intersect.</typeparam>
+        /// <param name="collections">A set of collections to intersect.</param>
+        /// <returns>A single collection of intersected values.</returns>
+        public static IEnumerable<T> Intersect<T>(this IEnumerable<IEnumerable<T>> collections)
+        {
+            return Intersect(collections, EqualityComparer<T>.Default);
+        }
+
+        /// <summary>
+        /// Intersects multiple collections.
+        /// </summary>
+        /// <typeparam name="T">The type to intersect.</typeparam>
+        /// <param name="collections">A set of collections to intersect.</param>
+        /// <param name="comparer">A comparer to use.</param>
+        /// <returns>A single collection of intersected values.</returns>
+        public static IEnumerable<T> Intersect<T>(this IEnumerable<IEnumerable<T>> collections, IEqualityComparer<T> comparer)
+        {
+            return ApplyMultiple(collections, x => x, comparer, (x, y, ke, c) => Enumerable.Intersect(x, y, c));
         }
     }
 }
