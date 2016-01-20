@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>Initial Release.</releaseNotes>
-    <copyright>Copyright 2015 CTL Global, Inc.</copyright>
+    <copyright>Copyright 2016 CTL Global, Inc.</copyright>
     <tags>core ctl</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.ComponentModel.DataAnnotations"/>

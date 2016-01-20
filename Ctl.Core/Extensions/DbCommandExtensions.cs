@@ -180,6 +180,38 @@ namespace Ctl.Extensions
         /// </summary>
         /// <param name="cmd">The database command to add a parameter to.</param>
         /// <param name="name">The name of the parameter to create.</param>
+        /// <param name="tvp">A table to add.</param>
+        /// <returns>The parameter which has been added to the command.</returns>
+        public static SqlParameter AddParameterWithValue(this SqlCommand cmd, string name, TableValuedParameter tvp)
+        {
+            if (cmd == null) throw new ArgumentNullException(nameof(cmd));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (tvp.TypeName == null) throw new ArgumentException("TVP must specify a type name.", nameof(tvp));
+
+            if (tvp.Records?.Any() != true)
+            {
+                // do not add a parameter if there are no values.
+                // TVPs default to an empty table if the parameter is not specified.
+                return null;
+            }
+
+            SqlParameter p = cmd.CreateParameter();
+
+            p.ParameterName = name;
+            p.SqlDbType = SqlDbType.Structured;
+            p.TypeName = tvp.TypeName;
+            p.Value = tvp.Records;
+
+            cmd.Parameters.Add(p);
+
+            return p;
+        }
+
+        /// <summary>
+        /// Adds a table-valued parameter to the command's parameter collection.
+        /// </summary>
+        /// <param name="cmd">The database command to add a parameter to.</param>
+        /// <param name="name">The name of the parameter to create.</param>
         /// <param name="typeName">The name of table type to use.</param>
         /// <param name="value">The value of the parameter.</param>
         /// <returns>The parameter which has been added to the command.</returns>
