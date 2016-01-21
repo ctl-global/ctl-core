@@ -30,18 +30,32 @@ using System.Threading.Tasks;
 
 namespace Ctl
 {
+    /// <summary>
+    /// Represents a user-defined table type that can be used to create TVPs.
+    /// </summary>
     public sealed class DbTable
     {
+        /// <summary>
+        /// The SQL user-defined table type for the table.
+        /// </summary>
         public string TypeName
         {
             get;
         }
 
+        /// <summary>
+        /// Column specifications for the table type.
+        /// </summary>
         public SqlMetaData[] MetaData
         {
             get;
         }
 
+        /// <summary>
+        /// Initializes a new DbTable.
+        /// </summary>
+        /// <param name="typeName">The SQL user-defined table type for the table.</param>
+        /// <param name="metaData">Column specifications for the table type.</param>
         public DbTable(string typeName, params SqlMetaData[] metaData)
         {
             if (typeName == null) throw new ArgumentNullException(nameof(typeName));
@@ -49,6 +63,18 @@ namespace Ctl
 
             this.TypeName = typeName;
             this.MetaData = metaData;
+        }
+
+        /// <summary>
+        /// Defines a table-valued parameter.
+        /// </summary>
+        /// <param name="transform">An action that transforms a value into a SqlDataRecord.</param>
+        /// <param name="records">Records to create a TVP for. May be null or empty if no records are available.</param>
+        public TableValuedParameter Create<T>(Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        {
+            if (transform == null) throw new ArgumentNullException(nameof(transform));
+
+            return new TableValuedParameter(TypeName, records?.Any() == true ? Db.BuildTvp(MetaData, transform, records) : null);
         }
     }
 }

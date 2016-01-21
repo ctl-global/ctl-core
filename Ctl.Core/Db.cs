@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -192,13 +193,15 @@ namespace Ctl
         public static TableValuedParameter Table<T>(this SqlConnection con, DbTable table, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
         {
             if (table == null) throw new ArgumentNullException(nameof(table));
-            if (transform == null) throw new ArgumentNullException(nameof(transform));
 
-            return Table(con, table.TypeName, records != null ? BuildTvp(table.MetaData, transform, records) : null);
+            return table.Create(transform, records);
         }
 
-        static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        internal static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
         {
+            Debug.Assert(records != null);
+            Debug.Assert(transform != null);
+
             SqlDataRecord r = new SqlDataRecord(metadata);
 
             foreach (T record in records)
