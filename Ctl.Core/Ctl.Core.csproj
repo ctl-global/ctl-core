@@ -68,6 +68,7 @@
     <Compile Include="DbTable.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Hex.cs" />
+    <Compile Include="InterlockedEx.cs" />
     <Compile Include="LogicalComparer.cs" />
     <Compile Include="Security\ECIES.cs" />
     <Compile Include="Extensions\AsyncEnumerableExtensions.cs" />
