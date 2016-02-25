@@ -86,6 +86,33 @@ namespace Ctl.Extensions
         /// </summary>
         /// <typeparam name="TKey">The dictionary's key type.</typeparam>
         /// <typeparam name="TValue">The dictionary's value type.</typeparam>
+        /// <typeparam name="TOther">A type containing data used to create a <typeparamref name="TValue"/>.</typeparam>
+        /// <param name="dict">The dictionary to use.</param>
+        /// <param name="key">The key to find.</param>
+        /// <param name="other">Data passed to <paramref name="createValue"/> to create a <typeparamref name="TValue"/>.</param>
+        /// <param name="createValue">A function to create a value for the key if one does not already exist.</param>
+        /// <returns>An existing or newly inserted value pertaining to the specified key.</returns>
+        public static TValue GetOrAdd<TKey, TValue, TOther>(this IDictionary<TKey, TValue> dict, TKey key, TOther other, Func<TKey, TOther, TValue> createValue)
+        {
+            if (dict == null) throw new ArgumentNullException(nameof(dict));
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (createValue == null) throw new ArgumentNullException(nameof(createValue));
+
+            TValue ret;
+
+            if (!dict.TryGetValue(key, out ret))
+            {
+                dict[key] = ret = createValue(key, other);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Gets or adds a value to a dictionary, constructing the new object as needed.
+        /// </summary>
+        /// <typeparam name="TKey">The dictionary's key type.</typeparam>
+        /// <typeparam name="TValue">The dictionary's value type.</typeparam>
         /// <param name="dict">The dictionary to use.</param>
         /// <param name="key">The key to find.</param>
         /// <param name="createValue">A function to create a value for the key if one does not already exist.</param>
