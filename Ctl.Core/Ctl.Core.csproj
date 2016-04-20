@@ -74,6 +74,7 @@
     <Compile Include="Hex.cs" />
     <Compile Include="InterlockedEx.cs" />
     <Compile Include="LogicalComparer.cs" />
+    <Compile Include="PercentProgress.cs" />
     <Compile Include="Security\ECIES.cs" />
     <Compile Include="Extensions\AsyncEnumerableExtensions.cs" />
     <Compile Include="AsyncEx.cs" />
