@@ -110,5 +110,37 @@ namespace Ctl
                 }
             }
         }
+
+        /// <summary>
+        /// Wraps an async Main() function, providing cancellation support with CTRL+C.
+        /// </summary>
+        /// <param name="func">The main function to run.</param>
+        public static void RunMain(Func<string[], CancellationToken, Task> func)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource())
+            {
+                Console.CancelKeyPress += (s, e) =>
+                {
+                    Console.Error.WriteLine("Cancellation pending...");
+
+                    e.Cancel = true;
+                    cts.Cancel();
+                };
+
+                RunMainImpl(func, cts.Token).Wait();
+            }
+        }
+
+        static async Task RunMainImpl(Func<string[], CancellationToken, Task> func, CancellationToken token)
+        {
+            try
+            {
+                await func(Environment.GetCommandLineArgs(), token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+            {
+                Console.Error.WriteLine("Operation cancelled.");
+            }
+        }
     }
 }
