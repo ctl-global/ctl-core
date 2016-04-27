@@ -23,6 +23,7 @@
 */
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Ctl.Extensions
@@ -141,6 +142,42 @@ namespace Ctl.Extensions
         public static void FireAndForget(this Task task)
         {
             // do nothing.
+        }
+
+        /// <summary>
+        /// Gets an awaitable for tasks that awaits completion only, swallowing any result (including exceptions).
+        /// </summary>
+        /// <param name="task">The task being awaited.</param>
+        /// <param name="continueOnCapturedContext">If true, the current context will be flowed through upon completion. This is identical in functionality to ConfigureAwait.</param>
+        /// <returns>An awaitable.</returns>
+        public static NoThrowProxy WithoutExceptions(this Task task, bool continueOnCapturedContext = true)
+        {
+            return new NoThrowProxy(task, continueOnCapturedContext);
+        }
+
+        /// <summary>
+        /// A awaitable/awaiter for Tasks that awaits only completion, swallowing any result (including exceptions).
+        /// </summary>
+        public struct NoThrowProxy : ICriticalNotifyCompletion
+        {
+            readonly Task task;
+            readonly bool continueOnCapturedContext;
+
+            internal NoThrowProxy(Task task, bool continueOnCapturedContext)
+            {
+                this.task = task;
+                this.continueOnCapturedContext = continueOnCapturedContext;
+            }
+
+            public bool IsCompleted => task.IsCompleted;
+            public void OnCompleted(Action continuation) => task.ConfigureAwait(continueOnCapturedContext).GetAwaiter().OnCompleted(continuation);
+            public void UnsafeOnCompleted(Action continuation) => task.ConfigureAwait(continueOnCapturedContext).GetAwaiter().UnsafeOnCompleted(continuation);
+            public NoThrowProxy GetAwaiter() => this;
+
+            public void GetResult()
+            {
+                if (!task.IsCompleted) task.Wait();
+            }
         }
     }
 }
