@@ -24,10 +24,12 @@
 
 using Microsoft.SqlServer.Server;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -197,8 +199,49 @@ namespace Ctl
             return table.Create(transform, records);
         }
 
+        /// <summary>
+        /// Builds a TVP from objects.
+        /// </summary>
+        /// <typeparam name="T">The object type to build a TVP from.</typeparam>
+        /// <param name="metadata">Metadata for the UDT to create.</param>
+        /// <param name="records">Objects to transform. May be null or empty.</param>
+        /// <param name="transform">A method to transform objects into SQL rows.</param>
+        /// <returns></returns>
+        public static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, IEnumerable<T> records, Action<SqlDataRecord, T> transform)
+        {
+            if (records == null)
+            {
+                return null;
+            }
+
+            ICollection c = records as ICollection;
+            
+            if (c != null)
+            {
+                if (c.Count == 0)
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                IBuffer<T> buf = records.Memoize(2);
+
+                if (!buf.Any())
+                {
+                    buf.Dispose();
+                    return null;
+                }
+
+                records = buf;
+            }
+
+            return BuildTvp(metadata, transform, records);
+        }
+
         internal static IEnumerable<SqlDataRecord> BuildTvp<T>(SqlMetaData[] metadata, Action<SqlDataRecord, T> transform, IEnumerable<T> records)
         {
+            Debug.Assert(metadata != null);
             Debug.Assert(records != null);
             Debug.Assert(transform != null);
 

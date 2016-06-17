@@ -24,6 +24,7 @@
 using Microsoft.SqlServer.Server;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,9 +32,9 @@ using System.Threading.Tasks;
 namespace Ctl
 {
     /// <summary>
-    /// Represents a user-defined table type that can be used to create TVPs.
+    /// Represents a user-defined table, used to create TVPs for SqlClient.
     /// </summary>
-    public sealed class DbTable
+    public class DbTable
     {
         /// <summary>
         /// The SQL user-defined table type for the table.
@@ -54,7 +55,7 @@ namespace Ctl
         /// <summary>
         /// Initializes a new DbTable.
         /// </summary>
-        /// <param name="typeName">The SQL user-defined table type for the table.</param>
+        /// <param name="typeName">The SQL type name for the user-defined table.</param>
         /// <param name="metaData">Column specifications for the table type.</param>
         public DbTable(string typeName, params SqlMetaData[] metaData)
         {
@@ -70,11 +71,56 @@ namespace Ctl
         /// </summary>
         /// <param name="transform">An action that transforms a value into a SqlDataRecord.</param>
         /// <param name="records">Records to create a TVP for. May be null or empty if no records are available.</param>
+        /// <remarks>
+        /// This is deprecated because
+        ///     (a) intellisense works a lot better when these two params are reversed, and
+        ///     (b) it is now consistently overloaded with the typed version of DbTable.
+        /// </remarks>
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         public TableValuedParameter Create<T>(Action<SqlDataRecord, T> transform, IEnumerable<T> records)
+        {
+            return Create(records, transform);
+        }
+
+        /// <summary>
+        /// Defines a table-valued parameter.
+        /// </summary>
+        /// <param name="transform">An action that transforms a value into a SqlDataRecord.</param>
+        /// <param name="records">Records to create a TVP for. May be null or empty if no records are available.</param>
+        public TableValuedParameter Create<T>(IEnumerable<T> records, Action<SqlDataRecord, T> transform)
         {
             if (transform == null) throw new ArgumentNullException(nameof(transform));
 
             return new TableValuedParameter(TypeName, records?.Any() == true ? Db.BuildTvp(MetaData, transform, records) : null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a user-defined table, used to create TVPs for SqlClient.
+    /// </summary>
+    /// <typeparam name="T">The type th create TVPs for.</typeparam>
+    public sealed class DbTable<T> : DbTable
+    {
+        readonly Action<SqlDataRecord, T> transform;
+
+        /// <summary>
+        /// Initializes a new DbTable.
+        /// </summary>
+        /// <param name="transform">A function to transform between a .NET object and a TVP row.</param>
+        /// <param name="typeName">The SQL type name for the user-defined table.</param>
+        /// <param name="metaData">Column specifications for the table type.</param>
+        public DbTable(Action<SqlDataRecord, T> transform, string typeName, params SqlMetaData[] metaData) : base(typeName, metaData)
+        {
+            this.transform = transform;
+        }
+
+        /// <summary>
+        /// Defines a table-valued parameter.
+        /// </summary>
+        /// <param name="records">Records to create a TVP for. May be null or empty if no records are available.</param>
+        public TableValuedParameter Create(IEnumerable<T> records)
+        {
+            return base.Create(records, transform);
         }
     }
 }
