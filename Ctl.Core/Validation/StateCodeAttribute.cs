@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,7 +36,7 @@ namespace Ctl.Validation
     /// Validates that a string is a 2-letter state code as defined by USPS.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class StateCodeAttribute : ValidationAttribute
+    public class StateCodeAttribute : UspsValidationAttribute
     {
         public StateCodeAttribute()
             : base("Field {0} must be a 2-letter state code as defined by USPS.")

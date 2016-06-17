@@ -36,7 +36,7 @@ namespace Ctl.Validation
     /// Validates that a string is a US ZIP code, formatted as either XXXXX or XXXXX-XXXX.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ZipCodeAttribute : ValidationAttribute
+    public class ZipCodeAttribute : UspsValidationAttribute
     {
         public ZipCodeAttribute()
             : base("Field {0} must be a zip code in format XXXXX or XXXXX-XXXX.")

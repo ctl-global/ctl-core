@@ -123,6 +123,7 @@
     <Compile Include="Validation\SignValidationAttribute.cs" />
     <Compile Include="Validation\StateCodeAttribute.cs" />
     <Compile Include="Validation\UnicodeCategoryAttribute.cs" />
+    <Compile Include="Validation\UspsValidationAttribute.cs" />
     <Compile Include="Validation\ZipCodeAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
