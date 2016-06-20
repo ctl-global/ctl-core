@@ -60,6 +60,6 @@ namespace Ctl.Validation
             return codes.Contains(s);
         }
 
-        static readonly HashSet<string> codes = new HashSet<string>("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL EN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY AS GU MP PR VI UM FM MH PW AA AE AP CM CZ NB PI TT CF CL DL HA KA MS MC MI NB WN WS CM".Split(), StringComparer.OrdinalIgnoreCase);
+        static readonly HashSet<string> codes = new HashSet<string>("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY AS GU MP PR VI UM FM MH PW AA AE AP CM CZ NB PI TT CF CL DL HA KA MS MC MI NB WN WS CM".Split(), StringComparer.OrdinalIgnoreCase);
     }
 }
