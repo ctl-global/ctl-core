@@ -151,7 +151,7 @@ namespace Ctl.Extensions
 
             for (int i = 0; i < s.Length; ++i)
             {
-                if (char.GetUnicodeCategory(s, i) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                if (CharUnicodeInfo.GetUnicodeCategory(s, i) != System.Globalization.UnicodeCategory.NonSpacingMark)
                 {
                     if (!char.IsSurrogatePair(s, i))
                     {
@@ -288,7 +288,7 @@ namespace Ctl.Extensions
 
             for (int i = 0; i < str.Length; i += char.IsSurrogatePair(str, i) ? 2 : 1)
             {
-                switch (char.GetUnicodeCategory(str, i))
+                switch (CharUnicodeInfo.GetUnicodeCategory(str, i))
                 {
                     case UnicodeCategory.NonSpacingMark:
                     case UnicodeCategory.SpacingCombiningMark:
@@ -346,7 +346,9 @@ namespace Ctl.Extensions
             if (string.IsNullOrEmpty(s)) return s;
 
             int takeLen = char.IsSurrogatePair(s, 0) ? 2 : 1;
-            return s.Substring(0, takeLen).ToUpper(culture) + s.Substring(takeLen).ToLower(culture);
+
+            TextInfo textInfo = culture.TextInfo;
+            return textInfo.ToUpper(s.Substring(0, takeLen)) + textInfo.ToLower(s.Substring(takeLen));
         }
 
         /// <summary>

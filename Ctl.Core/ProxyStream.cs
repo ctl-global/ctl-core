@@ -419,11 +419,6 @@ namespace Ctl
             }
         }
 
-        public override void Close()
-        {
-            base.Close();
-        }
-
         public override bool CanRead
         {
             get { return true; }

@@ -81,7 +81,7 @@ namespace Ctl.Validation
 
             for (int i = 0; i < s.Length; )
             {
-                UnicodeCategory cat = char.GetUnicodeCategory(s, i);
+                UnicodeCategory cat = CharUnicodeInfo.GetUnicodeCategory(s, i);
 
                 if (Array.BinarySearch(categories, cat) < 0)
                 {
