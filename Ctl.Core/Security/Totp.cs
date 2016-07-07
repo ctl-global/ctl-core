@@ -49,7 +49,7 @@ namespace Ctl.Security
         /// <param name="granularity">The time granularity to use.</param>
         /// <param name="key">The secret shared key used to mix the password.</param>
         public Totp(int digits, TimeSpan granularity, string key)
-            : this(digits, granularity, key, HMAC.Create(DefaultHmac))
+            : this(digits, granularity, CreateDefaultHmac(key))
         {
         }
 
@@ -60,7 +60,7 @@ namespace Ctl.Security
         /// <param name="granularity">The time granularity to use.</param>
         /// <param name="key">The secret shared key used to mix the password.</param>
         public Totp(int digits, TimeSpan granularity, byte[] key)
-            : this(digits, granularity, key, HMAC.Create(DefaultHmac))
+            : this(digits, granularity, CreateDefaultHmac(key))
         {
         }
 
@@ -69,23 +69,9 @@ namespace Ctl.Security
         /// </summary>
         /// <param name="digits">The number of digits in the password.</param>
         /// <param name="granularity">The time granularity to use.</param>
-        /// <param name="key">The secret shared key used to mix the password.</param>
         /// <param name="hmac">The base HMAC algorithm to use. Must produce at least 160 bits.</param>
-        public Totp(int digits, TimeSpan granularity, string key, HMAC hmac)
-            : base(digits, key, hmac)
-        {
-            this.div = granularity.Ticks;
-        }
-
-        /// <summary>
-        /// Creates an instance of the Totp class.
-        /// </summary>
-        /// <param name="digits">The number of digits in the password.</param>
-        /// <param name="granularity">The time granularity to use.</param>
-        /// <param name="key">The secret shared key used to mix the password.</param>
-        /// <param name="hmac">The base HMAC algorithm to use. Must produce at least 160 bits.</param>
-        public Totp(int digits, TimeSpan granularity, byte[] key, HMAC hmac)
-            : base(digits, key, hmac)
+        public Totp(int digits, TimeSpan granularity, HMAC hmac)
+            : base(digits, hmac)
         {
             this.div = granularity.Ticks;
         }

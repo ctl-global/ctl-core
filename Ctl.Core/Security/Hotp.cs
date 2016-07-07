@@ -35,7 +35,8 @@ namespace Ctl.Security
     /// </summary>
     class Hotp : IDisposable
     {
-        protected const string DefaultHmac = "HMACSHA1";
+        protected static HMAC CreateDefaultHmac(byte[] key) => new HMACSHA1(key);
+        protected static HMAC CreateDefaultHmac(string key) => CreateDefaultHmac(Encoding.UTF8.GetBytes(key));
 
         readonly HMAC hmac;
         readonly long mod;
@@ -46,18 +47,7 @@ namespace Ctl.Security
         /// <param name="digits">The number of digits in the password.</param>
         /// <param name="key">The secret shared key used to mix the password.</param>
         public Hotp(int digits, string key)
-            : this(digits, Encoding.UTF8.GetBytes(key), HMAC.Create(DefaultHmac))
-        {
-        }
-
-        /// <summary>
-        /// Creates an instance of the Hotp class.
-        /// </summary>
-        /// <param name="digits">The number of digits in the password.</param>
-        /// <param name="key">The secret shared key used to mix the password.</param>
-        /// <param name="hmac">The base HMAC algorithm to use. Must produce at least 160 bits.</param>
-        public Hotp(int digits, string key, HMAC hmac)
-            : this(digits, Encoding.UTF8.GetBytes(key), hmac)
+            : this(digits, CreateDefaultHmac(key))
         {
         }
 
@@ -67,7 +57,7 @@ namespace Ctl.Security
         /// <param name="digits">The number of digits in the password.</param>
         /// <param name="key">The secret shared key used to mix the password.</param>
         public Hotp(int digits, byte[] key)
-            : this(digits, key, HMAC.Create(DefaultHmac))
+            : this(digits, CreateDefaultHmac(key))
         {
         }
 
@@ -75,16 +65,14 @@ namespace Ctl.Security
         /// Creates an instance of the Hotp class.
         /// </summary>
         /// <param name="digits">The number of digits in the password.</param>
-        /// <param name="key">The secret shared key used to mix the password.</param>
         /// <param name="hmac">The base HMAC algorithm to use. Must produce at least 160 bits.</param>
-        public Hotp(int digits, byte[] key, HMAC hmac)
+        public Hotp(int digits, HMAC hmac)
         {
-            if (digits < 6) throw new ArgumentOutOfRangeException("digits", "One-time passwords must consist of at least 6 digits.");
-            if (key == null) throw new ArgumentNullException("key");
-            if (hmac.HashSize < 160) throw new ArgumentException("HMAC must produce at least 160 bits.", "hmac");
+            if (digits < 6) throw new ArgumentOutOfRangeException(nameof(digits), "One-time passwords must consist of at least 6 digits.");
+            if (hmac == null) throw new ArgumentNullException(nameof(hmac));
+            if (hmac.HashSize < 160) throw new ArgumentException("HMAC must produce at least 160 bits.", nameof(hmac));
 
             this.hmac = hmac;
-            this.hmac.Key = key;
 
             //this.mod = (long)BigInteger.Pow(10, Math.Min(digits, 10));
             this.mod = Convert.ToInt64(Math.Pow(10, Math.Min(digits, 10))); // accuracy should be fine for well above 10 digits...
