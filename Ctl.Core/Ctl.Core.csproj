@@ -69,6 +69,7 @@
     <Compile Include="Db.cs" />
     <Compile Include="DbModelReader.cs" />
     <Compile Include="DbTable.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Hex.cs" />
     <Compile Include="InterlockedEx.cs" />
