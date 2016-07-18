@@ -8,51 +8,85 @@ namespace Ctl.Extensions
 {
     public static class DateTimeExtensions
     {
+        public static TimeSpan GetBusinessDays(this DateTime fromDate, DateTime toDate)
+        {
+            if (toDate < fromDate)
+            {
+                return -GetBusinessDays(toDate, fromDate);
+            }
+
+            fromDate = ClampBackward(fromDate);
+            toDate = ClampForward(toDate);
+
+            long ticks = toDate.Ticks - fromDate.Ticks;
+
+            long weeks;
+            weeks = Math.DivRem(ticks, TimeSpan.TicksPerDay * 7, out ticks);
+
+            ticks += TimeSpan.TicksPerDay * 5 * weeks;
+
+            if (toDate.DayOfWeek < fromDate.DayOfWeek)
+            {
+                ticks -= TimeSpan.TicksPerDay * 2;
+            }
+
+            return new TimeSpan(ticks);
+        }
+
         /// <summary>
         /// Adds business days to a date.
         /// </summary>
         /// <param name="date">The date to add to.</param>
         /// <param name="businessDays">The amount of business days to add.</param>
         /// <returns>A new date with the business days added.</returns>
-        public static DateTime AddBusinessDays(this DateTime date, int businessDays)
+        public static DateTime AddBusinessDays(this DateTime date, TimeSpan businessDays)
         {
-            if (businessDays == 0)
+            if (businessDays == TimeSpan.Zero)
             {
                 return date;
             }
 
-            int weeks, days;
-            weeks = Math.DivRem(businessDays, 5, out days);
+            long weeks, ticks;
+            weeks = Math.DivRem(businessDays.Ticks, TimeSpan.TicksPerDay * 5, out ticks);
 
             if (weeks != 0)
             {
                 date = date.AddTicks(TimeSpan.TicksPerDay * 7 * weeks);
             }
 
-            if (businessDays > 0)
+            if (businessDays > TimeSpan.Zero)
             {
-                if (days == 0)
+                if (ticks == 0)
                 {
                     date = ClampForward(date);
                 }
                 else
                 {
-                    do date = ClampForward(date.AddTicks(TimeSpan.TicksPerDay));
-                    while (--days != 0);
+                    do
+                    {
+                        long ticksToAdd = Math.Min(ticks, TimeSpan.TicksPerDay);
+                        date = ClampForward(date.AddTicks(ticksToAdd));
+                        ticks -= ticksToAdd;
+                    }
+                    while (ticks != 0);
                 }
             }
             else
             {
                 // negative days.
-
-                if (days == 0)
+                if (ticks == 0)
                 {
                     date = ClampBackward(date);
                 }
                 else
                 {
-                    do date = ClampBackward(date.AddTicks(-TimeSpan.TicksPerDay));
-                    while (++days != 0);
+                    do
+                    {
+                        long ticksToAdd = Math.Max(ticks, -TimeSpan.TicksPerDay);
+                        date = ClampBackward(date.AddTicks(ticksToAdd));
+                        ticks -= ticksToAdd;
+                    }
+                    while (ticks != 0);
                 }
             }
 
