@@ -8,6 +8,12 @@ namespace Ctl.Extensions
 {
     public static class DateTimeExtensions
     {
+        /// <summary>
+        /// Determines the difference, in business days, between two dates.
+        /// </summary>
+        /// <param name="fromDate">The date to get business days from.</param>
+        /// <param name="toDate">The date to get business days to.</param>
+        /// <returns>A TimeSpan representing the amount of business days between the two dates.</returns>
         public static TimeSpan GetBusinessDays(this DateTime fromDate, DateTime toDate)
         {
             if (toDate < fromDate)
