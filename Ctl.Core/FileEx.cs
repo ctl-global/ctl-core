@@ -141,6 +141,11 @@ namespace Ctl
 
             MemoryStream ms = new MemoryStream();
 
+            if (src.CanSeek)
+            {
+                ms.Capacity = checked((int)src.Length);
+            }
+
             await src.CopyToAsync(ms, 4096, token).ConfigureAwait(false);
 
             ms.Position = 0;
