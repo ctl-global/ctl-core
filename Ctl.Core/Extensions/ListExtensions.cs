@@ -197,5 +197,30 @@ namespace Ctl.Extensions
 
             return index;
         }
+
+        /// <summary>
+        /// Shuffles a list.
+        /// </summary>
+        /// <typeparam name="T">The type of item to shuffle.</typeparam>
+        /// <param name="list">The list to shuffle</param>
+        /// <param name="rng">A random number generator to use. If none is provided, the default random number generator will be used.</param>
+        public static void Shuffle<T>(this IList<T> list, Random rng = null)
+        {
+            if (list == null) throw new ArgumentNullException(nameof(list));
+
+            if (rng == null)
+            {
+                rng = StaticRandom.LocalInstance;
+            }
+
+            for (int i = list.Count; i != 1;)
+            {
+                int swapidx = rng.Next(i--);
+
+                T tmp = list[i];
+                list[i] = list[swapidx];
+                list[swapidx] = tmp;
+            }
+        }
     }
 }
