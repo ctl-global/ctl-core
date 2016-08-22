@@ -213,7 +213,7 @@ namespace Ctl.Extensions
                 rng = StaticRandom.LocalInstance;
             }
 
-            for (int i = list.Count; i != 1;)
+            for (int i = list.Count; i > 1;)
             {
                 int swapidx = rng.Next(i--);
 
