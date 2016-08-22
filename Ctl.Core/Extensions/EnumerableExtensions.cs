@@ -753,5 +753,85 @@ namespace Ctl.Extensions
         {
             return ApplyMultiple(collections, x => x, comparer, (x, y, ke, c) => Enumerable.Intersect(x, y, c));
         }
+
+        /// <summary>
+        /// Buffers a collection into smaller collections based on a weight function.
+        /// </summary>
+        /// <typeparam name="TItem">The type of item to buffer.</typeparam>
+        /// <param name="items">Items to buffer.</param>
+        /// <param name="maximumWeight">A soft maximum weight for each item. A collection may end up larger than this if <paramref name="weightFunc"/> returns a weight larger than <paramref name="maximumWeight"/>.</param>
+        /// <param name="weightFunc">A weighting function for each item.</param>
+        /// <returns>A collection of buffered items.</returns>
+        public static IEnumerable<List<TItem>> Buffer<TItem>(this IEnumerable<TItem> items, int maximumWeight, Func<TItem, int> weightFunc)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            if (weightFunc == null) throw new ArgumentNullException(nameof(weightFunc));
+
+            List<TItem> acc = new List<TItem>();
+            int accWeight = 0;
+
+            foreach (var i in items)
+            {
+                int itemWeight = weightFunc(i);
+
+                if (acc.Count != 0 && accWeight + itemWeight > maximumWeight)
+                {
+                    yield return acc;
+
+                    acc = new List<TItem>();
+                    accWeight = 0;
+                }
+
+                acc.Add(i);
+                accWeight += itemWeight;
+            }
+
+            if (acc.Count != 0)
+            {
+                yield return acc;
+            }
+        }
+
+        /// <summary>
+        /// Accumulates a collection into smaller collections, using a predicate to determine when to break the collection.
+        /// </summary>
+        /// <typeparam name="TItem">The type of item to accumulate.</typeparam>
+        /// <typeparam name="TAccumulate">An accumulated value.</typeparam>
+        /// <typeparam name="TResult">The result of transforming an accumulated value.</typeparam>
+        /// <param name="items">Items to accumulate.</param>
+        /// <param name="createSeed">A function creating an empty accumulation.</param>
+        /// <param name="accumulatePredicate">A function determining if a value should be accumulated with the existing accumulation.</param>
+        /// <param name="accumulateFunc">A function that accumulates a value.</param>
+        /// <param name="resultSelector">A function transforming an accumulated value into a result.</param>
+        /// <returns>A collection of accumulated results.</returns>
+        public static IEnumerable<TResult> AggregateMany<TItem, TAccumulate, TResult>(this IEnumerable<TItem> items, Func<TAccumulate> createSeed, Func<TAccumulate, TItem, bool> accumulatePredicate, Func<TAccumulate, TItem, TAccumulate> accumulateFunc, Func<TAccumulate, TResult> resultSelector)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            if (createSeed == null) throw new ArgumentNullException(nameof(createSeed));
+            if (accumulatePredicate == null) throw new ArgumentNullException(nameof(accumulatePredicate));
+            if (accumulateFunc == null) throw new ArgumentNullException(nameof(accumulateFunc));
+            if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+
+            TAccumulate acc = createSeed();
+            bool hasItems = false;
+
+            foreach (var i in items)
+            {
+                if (hasItems && !accumulatePredicate(acc, i))
+                {
+                    yield return resultSelector(acc);
+                    acc = createSeed();
+                    hasItems = false;
+                }
+
+                acc = accumulateFunc(acc, i);
+                hasItems = true;
+            }
+
+            if (hasItems)
+            {
+                yield return resultSelector(acc);
+            }
+        }
     }
 }
