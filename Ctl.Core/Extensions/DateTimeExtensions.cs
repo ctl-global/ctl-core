@@ -9,6 +9,17 @@ namespace Ctl.Extensions
     public static class DateTimeExtensions
     {
         /// <summary>
+        /// Adds days to a date.
+        /// </summary>
+        /// <param name="fromDate">The date to add days to.</param>
+        /// <param name="days">The number of days to add.</param>
+        /// <returns>A new date with the days added.</returns>
+        public static DateTime AddDays(this DateTime fromDate, int days)
+        {
+            return fromDate.AddTicks(TimeSpan.TicksPerDay * days);
+        }
+
+        /// <summary>
         /// Determines the difference, in business days, between two dates.
         /// </summary>
         /// <param name="fromDate">The date to get business days from.</param>
@@ -37,6 +48,17 @@ namespace Ctl.Extensions
             }
 
             return new TimeSpan(ticks);
+        }
+
+        /// <summary>
+        /// Adds business days to a date.
+        /// </summary>
+        /// <param name="date">The date to add to.</param>
+        /// <param name="businessDays">The amount of business days to add.</param>
+        /// <returns>A new date with the business days added.</returns>
+        public static DateTime AddBusinessDays(this DateTime date, int businessDays)
+        {
+            return AddBusinessDays(date, new TimeSpan(TimeSpan.TicksPerDay * businessDays));
         }
 
         /// <summary>
