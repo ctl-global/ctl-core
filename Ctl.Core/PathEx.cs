@@ -23,6 +23,7 @@
 */
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace Ctl
         /// </summary>
         /// <param name="p">The path to convert.</param>
         /// <returns>A network-accessible (with proper permissions) UNC path.</returns>
-        public static string ToUncPath(string p)
+        public static string GetUncPath(string p)
         {
             if (p == null) throw new ArgumentNullException("p");
 
@@ -64,6 +65,15 @@ namespace Ctl
 
             return unc + p.Substring(idx + 1);
         }
+
+        /// <summary>
+        /// Finds the UNC path of a path.
+        /// </summary>
+        /// <param name="p">The path to convert.</param>
+        /// <returns>A network-accessible (with proper permissions) UNC path.</returns>
+        [Obsolete("Use PathEx.GetUncPath instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static string ToUncPath(string p) => GetUncPath(p);
 
         [DllImport("shlwapi.dll", EntryPoint="PathIsUNC", CharSet = CharSet.Unicode)]
         [ResourceExposure(ResourceScope.None)]
@@ -120,6 +130,33 @@ namespace Ctl
             }
 
             return "\\\\" + Environment.MachineName + "\\" + drive + "$";
+        }
+
+        /// <summary>
+        /// Converts a path to its long-path representation.
+        /// </summary>
+        /// <param name="path">The path to convert.</param>
+        /// <returns>A long path.</returns>
+        /// <remarks>
+        /// Many APIs will not accept long paths, YMMV.
+        /// </remarks>
+        public static string GetLongPath(string path)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
+            if (path.StartsWith(@"\\?\"))
+            {
+                return path;
+            }
+
+            if (PathIsUNC(path))
+            {
+                return @"\\?\UNC" + path.Substring(1);
+            }
+
+            path = Path.GetFullPath(path);
+
+            return @"\\?\" + path;
         }
     }
 }
