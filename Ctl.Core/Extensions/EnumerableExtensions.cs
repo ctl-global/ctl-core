@@ -23,6 +23,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -832,6 +833,17 @@ namespace Ctl.Extensions
             {
                 yield return resultSelector(acc);
             }
+        }
+
+        /// <summary>
+        /// Counts the number of elements in a collection, if the count can be determined in constant time.
+        /// </summary>
+        /// <typeparam name="T">The type of item in the collection.</typeparam>
+        /// <param name="e">The collection to count.</param>
+        /// <returns>If the collection can be counted in constant time, the count. Otherwise, null.</returns>
+        public static int? TryCountFast<T>(this IEnumerable<T> e)
+        {
+            return (e as ICollection<T>)?.Count ?? (e as IReadOnlyCollection<T>)?.Count ?? (e as ICollection)?.Count;
         }
     }
 }
