@@ -43,6 +43,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.OpenPgp, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.OpenPGP.1.8.1\lib\net20\BouncyCastle.OpenPgp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -111,6 +115,7 @@
     <Compile Include="ProxyStream.cs" />
     <Compile Include="RemoteTask.cs" />
     <Compile Include="ResourcePool.cs" />
+    <Compile Include="Security\PGP.cs" />
     <Compile Include="Security\Totp.cs" />
     <Compile Include="StaticRandom.cs" />
     <Compile Include="TableValuedParameter.cs" />
