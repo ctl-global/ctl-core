@@ -845,5 +845,27 @@ namespace Ctl.Extensions
         {
             return (e as ICollection<T>)?.Count ?? (e as IReadOnlyCollection<T>)?.Count ?? (e as ICollection)?.Count;
         }
+
+        public static ComparableString WithComparer(this string value, StringComparer comparer) => new ComparableString(value, comparer);
+
+        public struct ComparableString : IEquatable<ComparableString>, IComparable<ComparableString>
+        {
+            readonly StringComparer comparer;
+            readonly string value;
+
+            internal ComparableString(string value, StringComparer comparer)
+            {
+                this.value = value;
+                this.comparer = comparer;
+            }
+
+            public int CompareTo(ComparableString other) => comparer.Compare(value, other.value);
+
+            public bool Equals(ComparableString other) => comparer.Equals(value, other.value);
+
+            public override bool Equals(object obj) => (obj as ComparableString?)?.Equals(this) == true;
+
+            public override int GetHashCode() => comparer.GetHashCode(value);
+        }
     }
 }
