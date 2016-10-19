@@ -331,17 +331,22 @@ namespace Ctl
                     getValue = Expression.Convert(getValue, memberBaseType);
                 }
 
-                ParameterExpression exception = Expression.Parameter(typeof(InvalidCastException), "ex");
+                ParameterExpression invalidCastException = Expression.Parameter(typeof(InvalidCastException), "ex");
+                ParameterExpression genericException = Expression.Parameter(typeof(Exception), "ex");
 
                 getValue = Expression.TryCatch(getValue,
-                    Expression.Catch(exception,
+                    Expression.Catch(invalidCastException,
                     Expression.Throw(Expression.New(typeof(InvalidCastException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
                         Expression.Call(typeof(string).GetMethod("Concat", new[] { typeof(string), typeof(string), typeof(string) }),
                             Expression.Constant("Unable to cast from '"),
                             Expression.Property(Expression.Call(readerParam, typeof(DbDataReader).GetMethod("GetFieldType"), indexVar), "Name"),
                             Expression.Constant("' to '" + memberBaseType.Name + "' for member '" + info[i].Member.Name + "'. See InnerException for details.")
                             ),
-                        exception), getValue.Type)));
+                        invalidCastException), getValue.Type)),
+                    Expression.Catch(genericException,
+                    Expression.Throw(Expression.New(typeof(Exception).GetConstructor(new[] { typeof(string), typeof(Exception) }),
+                        Expression.Constant("Unable to read member '" + info[i].Member.Name + "', see InnerException for details."),
+                        genericException), getValue.Type)));
 
                 if (memberBaseType != info[i].MemberType)
                 {
