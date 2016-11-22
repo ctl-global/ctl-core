@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Ctl.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for the DateTime type.
+    /// </summary>
     public static class DateTimeExtensions
     {
         /// <summary>
@@ -26,14 +29,24 @@ namespace Ctl.Extensions
         /// <param name="toDate">The date to get business days to.</param>
         /// <returns>A TimeSpan representing the amount of business days between the two dates.</returns>
         public static TimeSpan GetBusinessDays(this DateTime fromDate, DateTime toDate)
+            => GetBusinessDays(fromDate, toDate, null);
+
+        /// <summary>
+        /// Determines the difference, in business days, between two dates.
+        /// </summary>
+        /// <param name="fromDate">The date to get business days from.</param>
+        /// <param name="toDate">The date to get business days to.</param>
+        /// <param name="holidayProvider">A holiday provider used to exclude holidays from business days. If null, only Saturday and Sunday are assumed off.</param>
+        /// <returns>A TimeSpan representing the amount of business days between the two dates.</returns>
+        public static TimeSpan GetBusinessDays(this DateTime fromDate, DateTime toDate, IHolidayProvider holidayProvider)
         {
             if (toDate < fromDate)
             {
                 return -GetBusinessDays(toDate, fromDate);
             }
 
-            fromDate = ClampBackward(fromDate);
-            toDate = ClampForward(toDate);
+            fromDate = ClampBackward(fromDate, holidayProvider);
+            toDate = ClampForward(toDate, holidayProvider);
 
             long ticks = toDate.Ticks - fromDate.Ticks;
 
@@ -47,6 +60,11 @@ namespace Ctl.Extensions
                 ticks -= TimeSpan.TicksPerDay * 2;
             }
 
+            if (holidayProvider != null)
+            {
+                ticks -= holidayProvider.CountHolidays(fromDate, toDate) * TimeSpan.TicksPerDay;
+            }
+
             return new TimeSpan(ticks);
         }
 
@@ -56,9 +74,19 @@ namespace Ctl.Extensions
         /// <param name="date">The date to add to.</param>
         /// <param name="businessDays">The amount of business days to add.</param>
         /// <returns>A new date with the business days added.</returns>
-        public static DateTime AddBusinessDays(this DateTime date, int businessDays)
+        public static DateTime AddBusinessDays(this DateTime date, int businessDays) =>
+            AddBusinessDays(date, businessDays, null);
+
+        /// <summary>
+        /// Adds business days to a date.
+        /// </summary>
+        /// <param name="date">The date to add to.</param>
+        /// <param name="businessDays">The amount of business days to add.</param>
+        /// <param name="holidayProvider">A holiday provider used to exclude holidays from business days. If null, only Saturday and Sunday are assumed off.</param>
+        /// <returns>A new date with the business days added.</returns>
+        public static DateTime AddBusinessDays(this DateTime date, int businessDays, IHolidayProvider holidayProvider)
         {
-            return AddBusinessDays(date, new TimeSpan(TimeSpan.TicksPerDay * businessDays));
+            return AddBusinessDays(date, new TimeSpan(TimeSpan.TicksPerDay * businessDays), holidayProvider);
         }
 
         /// <summary>
@@ -67,7 +95,17 @@ namespace Ctl.Extensions
         /// <param name="date">The date to add to.</param>
         /// <param name="businessDays">The amount of business days to add.</param>
         /// <returns>A new date with the business days added.</returns>
-        public static DateTime AddBusinessDays(this DateTime date, TimeSpan businessDays)
+        public static DateTime AddBusinessDays(this DateTime date, TimeSpan businessDays) =>
+            AddBusinessDays(date, businessDays, null);
+
+        /// <summary>
+        /// Adds business days to a date.
+        /// </summary>
+        /// <param name="date">The date to add to.</param>
+        /// <param name="businessDays">The amount of business days to add.</param>
+        /// <param name="holidayProvider">A holiday provider used to exclude holidays from business days. If null, only Saturday and Sunday are assumed off.</param>
+        /// <returns>A new date with the business days added.</returns>
+        public static DateTime AddBusinessDays(this DateTime date, TimeSpan businessDays, IHolidayProvider holidayProvider)
         {
             if (businessDays == TimeSpan.Zero)
             {
@@ -79,43 +117,41 @@ namespace Ctl.Extensions
 
             if (weeks != 0)
             {
-                date = date.AddTicks(TimeSpan.TicksPerDay * 7 * weeks);
+                DateTime newDate = date.AddTicks(TimeSpan.TicksPerDay * 7 * weeks);
+
+                if (holidayProvider != null)
+                {
+                    int holidays = holidayProvider.CountHolidays(date < newDate ? date : newDate, date < newDate ? newDate : date);
+
+                    if (businessDays < TimeSpan.Zero)
+                        holidays = -holidays;
+
+                    ticks += holidays * TimeSpan.TicksPerDay;
+                }
+
+                date = newDate;
             }
 
             if (businessDays > TimeSpan.Zero)
             {
-                if (ticks == 0)
+                do
                 {
-                    date = ClampForward(date);
+                    long ticksToAdd = Math.Min(ticks, TimeSpan.TicksPerDay);
+                    date = ClampForward(date.AddTicks(ticksToAdd), holidayProvider);
+                    ticks -= ticksToAdd;
                 }
-                else
-                {
-                    do
-                    {
-                        long ticksToAdd = Math.Min(ticks, TimeSpan.TicksPerDay);
-                        date = ClampForward(date.AddTicks(ticksToAdd));
-                        ticks -= ticksToAdd;
-                    }
-                    while (ticks != 0);
-                }
+                while (ticks != 0);
             }
             else
             {
                 // negative days.
-                if (ticks == 0)
+                do
                 {
-                    date = ClampBackward(date);
+                    long ticksToAdd = Math.Max(ticks, -TimeSpan.TicksPerDay);
+                    date = ClampBackward(date.AddTicks(ticksToAdd), holidayProvider);
+                    ticks -= ticksToAdd;
                 }
-                else
-                {
-                    do
-                    {
-                        long ticksToAdd = Math.Max(ticks, -TimeSpan.TicksPerDay);
-                        date = ClampBackward(date.AddTicks(ticksToAdd));
-                        ticks -= ticksToAdd;
-                    }
-                    while (ticks != 0);
-                }
+                while (ticks != 0);
             }
 
             return date;
@@ -124,27 +160,39 @@ namespace Ctl.Extensions
         /// <summary>
         /// Clamps Saturday/Sunday to Friday.
         /// </summary>
-        static DateTime ClampBackward(DateTime date)
+        static DateTime ClampBackward(DateTime date, IHolidayProvider holidayProvider)
         {
-            DayOfWeek dw = date.DayOfWeek;
+            while (true)
+            {
+                DayOfWeek dw = date.DayOfWeek;
 
-            return
-                dw == DayOfWeek.Saturday ? date.AddTicks(-TimeSpan.TicksPerDay) :
-                dw == DayOfWeek.Sunday ? date.AddTicks(-TimeSpan.TicksPerDay * 2) :
-                date;
+                if (dw == DayOfWeek.Saturday) date = date.AddTicks(-TimeSpan.TicksPerDay);
+                if (dw == DayOfWeek.Sunday) date = date.AddTicks(-TimeSpan.TicksPerDay * 2);
+
+                if (holidayProvider == null || !holidayProvider.IsHoliday(date))
+                    return date;
+
+                date = date.AddTicks(-TimeSpan.TicksPerDay);
+            }
         }
 
         /// <summary>
         /// Clamps Saturday/Sunday to Monday.
         /// </summary>
-        static DateTime ClampForward(DateTime date)
+        static DateTime ClampForward(DateTime date, IHolidayProvider holidayProvider)
         {
-            DayOfWeek dw = date.DayOfWeek;
+            while (true)
+            {
+                DayOfWeek dw = date.DayOfWeek;
 
-            return
-                dw == DayOfWeek.Saturday ? date.AddTicks(TimeSpan.TicksPerDay * 2) :
-                dw == DayOfWeek.Sunday ? date.AddTicks(TimeSpan.TicksPerDay) :
-                date;
+                if (dw == DayOfWeek.Saturday) date = date.AddTicks(TimeSpan.TicksPerDay * 2);
+                else if (dw == DayOfWeek.Sunday) date = date.AddTicks(TimeSpan.TicksPerDay);
+
+                if (holidayProvider == null || !holidayProvider.IsHoliday(date))
+                    return date;
+
+                date = date.AddTicks(TimeSpan.TicksPerDay);
+            }
         }
     }
 }

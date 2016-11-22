@@ -74,6 +74,7 @@
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Extensions\RandomExtensions.cs" />
     <Compile Include="Hex.cs" />
+    <Compile Include="IHolidayProvider.cs" />
     <Compile Include="InterlockedEx.cs" />
     <Compile Include="LogicalComparer.cs" />
     <Compile Include="PercentProgress.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="RemoteTask.cs" />
     <Compile Include="ResourcePool.cs" />
     <Compile Include="Security\Totp.cs" />
+    <Compile Include="SimpleHolidayProvider.cs" />
     <Compile Include="StaticRandom.cs" />
     <Compile Include="TableValuedParameter.cs" />
     <Compile Include="Validation\AlphaNumericAttribute.cs" />
