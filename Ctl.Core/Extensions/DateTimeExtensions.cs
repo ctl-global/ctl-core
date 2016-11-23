@@ -158,6 +158,18 @@ namespace Ctl.Extensions
         }
 
         /// <summary>
+        /// Finds the nearest business day.
+        /// </summary>
+        /// <param name="date">The date to start with.</param>
+        /// <param name="holidayProvider">A provider used to skip holidays.</param>
+        /// <param name="forward">If true, the date will be moved forward to the next business day. If false, the date will be moved back.</param>
+        /// <returns>If <paramref name="date"/> already falls on a business day, it is returned unchanged. Otherwise, the nearest business day.</returns>
+        public static DateTime ToBusinessDay(this DateTime date, IHolidayProvider holidayProvider = null, bool forward = true)
+        {
+            return forward ? ClampForward(date, holidayProvider) : ClampBackward(date, holidayProvider);
+        }
+
+        /// <summary>
         /// Clamps Saturday/Sunday to Friday.
         /// </summary>
         static DateTime ClampBackward(DateTime date, IHolidayProvider holidayProvider)
@@ -167,7 +179,7 @@ namespace Ctl.Extensions
                 DayOfWeek dw = date.DayOfWeek;
 
                 if (dw == DayOfWeek.Saturday) date = date.AddTicks(-TimeSpan.TicksPerDay);
-                if (dw == DayOfWeek.Sunday) date = date.AddTicks(-TimeSpan.TicksPerDay * 2);
+                else if (dw == DayOfWeek.Sunday) date = date.AddTicks(-TimeSpan.TicksPerDay * 2);
 
                 if (holidayProvider == null || !holidayProvider.IsHoliday(date))
                     return date;
