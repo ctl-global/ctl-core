@@ -151,7 +151,7 @@ namespace Ctl.Extensions
 
             for (int i = 0; i < s.Length; ++i)
             {
-                if (CharUnicodeInfo.GetUnicodeCategory(s, i) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                if (!Unicode.IsCombiningCharacter(s, i))
                 {
                     if (!char.IsSurrogatePair(s, i))
                     {
@@ -241,7 +241,7 @@ namespace Ctl.Extensions
 
             int startPos = -1;
 
-            for (int i = 0; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            for (int i = 0; i < s.Length; i += Unicode.GetCodePointLength(s, i))
             {
                 if (!isSeparator(s, i))
                 {
@@ -263,17 +263,17 @@ namespace Ctl.Extensions
         /// <summary>
         /// Truncates a string to a specific number of grapheme clusters (actual visual glyphs).
         /// Special care is taken to not break surrogate pairs and combining characters.
-        /// This may result in a string that takes more than <param name="len"/> code units of storage.
+        /// This may result in a string that takes more than <paramref name="length"/> code units of storage.
         /// </summary>
         /// <param name="str">The string to truncate.</param>
         /// <param name="length">The number of grapheme clusters to truncate to.</param>
-        /// <param name="ellipsis">If true, an ellipsis will be appended in the even of truncation.</param>
+        /// <param name="ellipsis">If true, an ellipsis will be appended in the event of truncation.</param>
         /// <returns>A truncated string, or the original string if no truncation was necessary.</returns>
         public static string VisualTruncate(this string str, int length, bool ellipsis = false)
         {
             if (length < 0)
             {
-                throw new ArgumentOutOfRangeException("length", "Length must not be negative.");
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must not be negative.");
             }
 
             if (str == null || str.Length <= length)
@@ -281,35 +281,18 @@ namespace Ctl.Extensions
                 return str;
             }
 
-            // Surrogate pairs will not be split.
-            // Combining characters will not be split from their base character.
-
-            bool hasBase = false;
-
-            for (int i = 0; i < str.Length; i += char.IsSurrogatePair(str, i) ? 2 : 1)
+            for (int i = 0; i < str.Length;)
             {
-                switch (CharUnicodeInfo.GetUnicodeCategory(str, i))
+                int len = Unicode.GetGraphemeClusterLength(str, i);
+
+                if (i + len + (ellipsis ? 1 : 0) > length)
                 {
-                    case UnicodeCategory.NonSpacingMark:
-                    case UnicodeCategory.SpacingCombiningMark:
-                    case UnicodeCategory.EnclosingMark:
-                        if (hasBase)
-                        {
-                            // combining characters do not count toward length if they've got a base character before them.
-                            continue;
-                        }
-                        break;
-                    default:
-                        hasBase = true;
-                        break;
+                    string s = str.Substring(0, i);
+
+                    return ellipsis ? (s + "…") : s;
                 }
 
-                if (length-- == 0)
-                {
-                    str = str.Substring(0, i);
-                    if (ellipsis) str += "…";
-                    return str;
-                }
+                i += len;
             }
 
             return str;
@@ -345,7 +328,7 @@ namespace Ctl.Extensions
         {
             if (string.IsNullOrEmpty(s)) return s;
 
-            int takeLen = char.IsSurrogatePair(s, 0) ? 2 : 1;
+            int takeLen = Unicode.GetGraphemeClusterLength(s, 0);
 
             TextInfo textInfo = culture.TextInfo;
             return textInfo.ToUpper(s.Substring(0, takeLen)) + textInfo.ToLower(s.Substring(takeLen));
@@ -362,7 +345,7 @@ namespace Ctl.Extensions
 
             bool hasUpper = false;
 
-            for (int i = 0; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            for (int i = 0; i < s.Length; i += Unicode.GetCodePointLength(s, i))
             {
                 if (char.IsLower(s, i))
                 {
@@ -389,7 +372,7 @@ namespace Ctl.Extensions
 
             bool hasLower = false;
 
-            for (int i = 0; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            for (int i = 0; i < s.Length; i += Unicode.GetCodePointLength(s, i))
             {
                 if (char.IsUpper(s, i))
                 {
@@ -419,7 +402,7 @@ namespace Ctl.Extensions
                 return false;
             }
 
-            for (int i = char.IsSurrogatePair(s, 0) ? 2 : 1; i < s.Length; i += char.IsSurrogatePair(s, i) ? 2 : 1)
+            for (int i = Unicode.GetCodePointLength(s, 0); i < s.Length; i += Unicode.GetCodePointLength(s, i))
             {
                 if (char.IsUpper(s, i))
                 {
@@ -428,6 +411,24 @@ namespace Ctl.Extensions
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Splits the string out into a collection of grapheme clusters.
+        /// </summary>
+        /// <param name="str">The string to get as grapheme clusters.</param>
+        /// <returns>A collection of grapheme clusters.</returns>
+        public static IEnumerable<StringSegment> AsGraphemeClusters(this string str)
+        {
+            if (str == null) throw new ArgumentNullException(nameof(str));
+
+            for (int i = 0; i < str.Length;)
+            {
+                int len = Unicode.GetGraphemeClusterLength(str, i);
+                yield return new StringSegment(str, i, len);
+
+                i += len;
+            }
         }
     }
 }

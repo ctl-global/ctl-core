@@ -9,8 +9,8 @@
     <iconUrl>http://ctl-global.github.io/ctl-logo-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Initial Release.</releaseNotes>
-    <copyright>Copyright 2016 CTL Global, Inc.</copyright>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2017 CTL Global, Inc.</copyright>
     <tags>core ctl</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.ComponentModel.DataAnnotations"/>
