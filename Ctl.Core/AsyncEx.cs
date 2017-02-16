@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -32,82 +33,80 @@ namespace Ctl
 {
     public static class AsyncEx
     {
+        public static readonly Task<bool> TrueTask = Task.FromResult(true);
+        public static readonly Task<bool> FalseTask = Task.FromResult(false);
+
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         public static IAsyncEnumerable<TOut> Create<TState, TOut>(Func<TState> createState, Func<TState, CancellationToken, Task<bool>> moveNext, Func<TState, TOut> getCurrent)
         {
-            return Create(ct => Task.FromResult(createState()), moveNext, getCurrent);
+            return AsyncEnumerable.Defer(() =>
+            {
+                var state = createState();
+                return Create(ct => moveNext(state, ct), () => getCurrent(state));
+            });
         }
 
+        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
         public static IAsyncEnumerable<TOut> Create<TState, TOut>(Func<CancellationToken, Task<TState>> createState, Func<TState, CancellationToken, Task<bool>> moveNext, Func<TState, TOut> getCurrent)
         {
-            return new FunctionalAsyncEnumerable<TState, TOut>(createState, moveNext, getCurrent);
-        }
-
-        sealed class FunctionalAsyncEnumerable<TState, TOut> : IAsyncEnumerable<TOut>
-        {
-            readonly Func<CancellationToken, Task<TState>> createState;
-            readonly Func<TState, CancellationToken, Task<bool>> moveNext;
-            readonly Func<TState, TOut> getCurrent;
-
-            public FunctionalAsyncEnumerable(Func<CancellationToken, Task<TState>> createState, Func<TState, CancellationToken, Task<bool>> moveNext, Func<TState, TOut> getCurrent)
+            return AsyncEnumerable.Defer(() =>
             {
-                this.createState = createState;
-                this.moveNext = moveNext;
-                this.getCurrent = getCurrent;
-            }
+                TState state = default(TState);
+                bool isInit = false;
 
-            public IAsyncEnumerator<TOut> GetEnumerator()
-            {
-                return new FunctionalAsyncEnumerator<TState, TOut>(createState, moveNext, getCurrent);
-            }
-        }
-
-        sealed class FunctionalAsyncEnumerator<TState, TOut> : IAsyncEnumerator<TOut>
-        {
-            Func<CancellationToken, Task<TState>> createState;
-            readonly Func<TState, CancellationToken, Task<bool>> moveNext;
-            readonly Func<TState, TOut> getCurrent;
-
-            TState state;
-            bool disposed;
-
-            public FunctionalAsyncEnumerator(Func<CancellationToken, Task<TState>> createState, Func<TState, CancellationToken, Task<bool>> moveNext, Func<TState, TOut> getCurrent)
-            {
-                this.createState = createState;
-                this.moveNext = moveNext;
-                this.getCurrent = getCurrent;
-            }
-
-            public TOut Current
-            {
-                get { return getCurrent(state); }
-            }
-
-            public Task<bool> MoveNext(CancellationToken cancellationToken)
-            {
-                return createState == null ? moveNext(state, cancellationToken) : MoveNextImpl(cancellationToken);
-            }
-
-            async Task<bool> MoveNextImpl(CancellationToken cancellationToken)
-            {
-                if (createState != null)
+                return Create(ct =>
                 {
-                    state = await createState(cancellationToken).ConfigureAwait(false);
-                    createState = null;
-                }
+                    if (isInit) return moveNext(state, ct);
 
-                return await moveNext(state, cancellationToken).ConfigureAwait(false);
+                    return createState(ct)
+                        .ContinueWith(tstate =>
+                        {
+                            state = tstate.Result;
+                            return moveNext(state, ct);
+                        }, TaskContinuationOptions.ExecuteSynchronously)
+                        .Unwrap();
+                }, () => getCurrent(state));
+            });
+        }
+
+        public static IAsyncEnumerable<TOut> Create<TOut>(Func<CancellationToken, Task<bool>> moveNext, Func<TOut> getCurrent)
+        {
+            return new FunctionalAsyncEnumerable<TOut>(moveNext, getCurrent);
+        }
+
+        sealed class FunctionalAsyncEnumerable<TOut> : IAsyncEnumerable<TOut>
+        {
+            readonly Func<CancellationToken, Task<bool>> moveNext;
+            readonly Func<TOut> getCurrent;
+
+            public FunctionalAsyncEnumerable(Func<CancellationToken, Task<bool>> moveNext, Func<TOut> getCurrent)
+            {
+                this.moveNext = moveNext;
+                this.getCurrent = getCurrent;
             }
+
+            public IAsyncEnumerator<TOut> GetEnumerator() => new FunctionalAsyncEnumerator<TOut>(moveNext, getCurrent);
+        }
+
+        sealed class FunctionalAsyncEnumerator<TOut> : IAsyncEnumerator<TOut>
+        {
+            Func<CancellationToken, Task<bool>> moveNext;
+            Func<TOut> getCurrent;
+
+            public FunctionalAsyncEnumerator(Func<CancellationToken, Task<bool>> moveNext, Func<TOut> getCurrent)
+            {
+                this.moveNext = moveNext;
+                this.getCurrent = getCurrent;
+            }
+
+            public TOut Current => getCurrent();
+
+            public Task<bool> MoveNext(CancellationToken cancellationToken) => moveNext(cancellationToken);
 
             public void Dispose()
             {
-                if(!disposed && createState == null)
-                {
-                    IDisposable disp = state as IDisposable;
-                    if (disp != null) disp.Dispose();
-
-                    state = default(TState);
-                    disposed = true;
-                }
+                moveNext = null;
+                getCurrent = null;
             }
         }
 
