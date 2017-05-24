@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Ctl</RootNamespace>
     <AssemblyName>Ctl.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
@@ -74,6 +74,7 @@
     <Compile Include="Extensions\DbConnectionExtensions.cs" />
     <Compile Include="Extensions\RandomExtensions.cs" />
     <Compile Include="Hex.cs" />
+    <Compile Include="HttpUtils.cs" />
     <Compile Include="IHolidayProvider.cs" />
     <Compile Include="InterlockedEx.cs" />
     <Compile Include="LogicalComparer.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="StringSegment.cs" />
     <Compile Include="TableValuedParameter.cs" />
     <Compile Include="Unicode.cs" />
+    <Compile Include="UriUtils.cs" />
     <Compile Include="Validation\AlphaNumericAttribute.cs" />
     <Compile Include="Validation\CountryCodeAttribute.cs" />
     <Compile Include="Validation\NonEmptyAttribute.cs" />
