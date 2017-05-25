@@ -1,60 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3DAE4D2C-0AD4-4234-B634-86ED23E366BD}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ctl</RootNamespace>
-    <AssemblyName>Ctl.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Ctl.Core.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release 4.6|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>bin\Release\Ctl.Core.XML</DocumentationFile>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFramework>net46</TargetFramework>
+
+    <AssemblyVersion>2.0</AssemblyVersion>
+    <FileVersion>2.0</FileVersion>
+    <AssemblyTitle>Ctl.Core</AssemblyTitle>
+    <Description>A collection of core utilities and extensions applicable for most projects.</Description>
+    <Company>CTL Global, Inc.</Company>
+    <Product>Ctl.Core</Product>
+    <Copyright>Copyright © CTL Global, Inc. 2014</Copyright>
+
+    <PackageIconUrl>http://ctl-global.github.io/ctl-logo-nuget.png</PackageIconUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageTags>core ctl</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Interactive, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ix-Main.1.2.5\lib\net45\System.Interactive.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Interactive.Async, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ix-Async.1.2.5\lib\net45\System.Interactive.Async.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <PackageReference Include="System.Interactive" Version="3.1.1" />
+    <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
     <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -63,92 +29,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayBuffer.cs" />
-    <Compile Include="Benchmark.cs" />
-    <Compile Include="CombiningStream.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="Db.cs" />
-    <Compile Include="DbModelReader.cs" />
-    <Compile Include="DbTable.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
-    <Compile Include="Extensions\DbConnectionExtensions.cs" />
-    <Compile Include="Extensions\RandomExtensions.cs" />
-    <Compile Include="Hex.cs" />
-    <Compile Include="HttpUtils.cs" />
-    <Compile Include="IHolidayProvider.cs" />
-    <Compile Include="InterlockedEx.cs" />
-    <Compile Include="LogicalComparer.cs" />
-    <Compile Include="PercentProgress.cs" />
-    <Compile Include="Security\ECIES.cs" />
-    <Compile Include="Extensions\AsyncEnumerableExtensions.cs" />
-    <Compile Include="AsyncEx.cs" />
-    <Compile Include="Extensions\CollectionExtensions.cs" />
-    <Compile Include="Extensions\DbCommandExtensions.cs" />
-    <Compile Include="Extensions\DbDataReaderExtensions.cs" />
-    <Compile Include="Extensions\DbDynamicMethods.cs" />
-    <Compile Include="Extensions\DecimalExtensions.cs" />
-    <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Extensions\ExceptionExtensions.cs" />
-    <Compile Include="Extensions\IntExtensions.cs" />
-    <Compile Include="Extensions\ListExtensions.cs" />
-    <Compile Include="Extensions\ProcessExtensions.cs" />
-    <Compile Include="Extensions\ProducerConsumerExtensions.cs" />
-    <Compile Include="Extensions\SmtpClientExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Extensions\TextReaderExtensions.cs" />
-    <Compile Include="Extensions\TextWriterExtensions.cs" />
-    <Compile Include="Extensions\TypeExtensions.cs" />
-    <Compile Include="Extensions\XLinqExtensions.cs" />
-    <Compile Include="FileEx.cs" />
-    <Compile Include="Functional.cs" />
-    <Compile Include="Graph.cs" />
-    <Compile Include="HamSort.cs" />
-    <Compile Include="HashUtils.cs" />
-    <Compile Include="Security\Hotp.cs" />
-    <Compile Include="Identity.cs" />
-    <Compile Include="NormalizingComparer.cs" />
-    <Compile Include="Optional.cs" />
-    <Compile Include="PathEx.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ProxyStream.cs" />
-    <Compile Include="RemoteTask.cs" />
-    <Compile Include="ResourcePool.cs" />
-    <Compile Include="Security\Totp.cs" />
-    <Compile Include="SimpleHolidayProvider.cs" />
-    <Compile Include="StaticRandom.cs" />
-    <Compile Include="StringSegment.cs" />
-    <Compile Include="TableValuedParameter.cs" />
-    <Compile Include="Unicode.cs" />
-    <Compile Include="UriUtils.cs" />
-    <Compile Include="Validation\AlphaNumericAttribute.cs" />
-    <Compile Include="Validation\CountryCodeAttribute.cs" />
-    <Compile Include="Validation\NonEmptyAttribute.cs" />
-    <Compile Include="Validation\NumericAttribute.cs" />
-    <Compile Include="Validation\ObjectValidationException.cs" />
-    <Compile Include="Validation\PrintableAsciiAttribute.cs" />
-    <Compile Include="Validation\PrintableAttribute.cs" />
-    <Compile Include="Validation\PrintableLatinAttribute.cs" />
-    <Compile Include="Validation\SignValidationAttribute.cs" />
-    <Compile Include="Validation\StateCodeAttribute.cs" />
-    <Compile Include="Validation\UnicodeCategoryAttribute.cs" />
-    <Compile Include="Validation\UspsValidationAttribute.cs" />
-    <Compile Include="Validation\ZipCodeAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Ctl.Core.nuspec" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="ligatures.txt" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
