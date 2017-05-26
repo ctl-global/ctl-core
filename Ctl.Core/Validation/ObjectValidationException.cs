@@ -9,7 +9,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -25,16 +25,21 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+
+#if NETSTANDARD2_0 || NET451
+using System.Runtime.Serialization;
+#endif
 
 namespace Ctl.Validation
 {
     /// <summary>
     /// Thrown when an object fails validation.
     /// </summary>
+#if NETSTANDARD2_0 || NET451
     [Serializable]
+#endif
     public class ObjectValidationException : Exception
     {
         public object Object { get; private set; }
@@ -81,6 +86,7 @@ namespace Ctl.Validation
             this.ValidationResults = validationResults;
         }
 
+#if NETSTANDARD2_0 || NET451
         /// <summary>
         /// Instantiates a new ObjectValidationException from a serialized instance.
         /// </summary>
@@ -105,8 +111,11 @@ namespace Ctl.Validation
             base.GetObjectData(info, context);
             info.AddValue("Errors", ValidationResults.Select(x => new SerializedValidationResult { ErrorMessage = x.ErrorMessage, MemberNames = x.MemberNames.ToList() }).ToList(), typeof(List<SerializedValidationResult>));
         }
+#endif
 
+#if NETSTANDARD2_0 || NET451
         [Serializable]
+#endif
         sealed class SerializedValidationResult
         {
             public string ErrorMessage { get; set; }

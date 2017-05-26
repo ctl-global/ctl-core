@@ -113,6 +113,8 @@ namespace Ctl
             return reader.WriteAsyncImpl(buffer, offset, count, cancellationToken);
         }
 
+#if NET451
+
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return reader.WriteAsyncImpl(buffer, offset, count, CancellationToken.None).ContinueWith(callback, state);
@@ -122,6 +124,8 @@ namespace Ctl
         {
             ((Task)asyncResult).Wait();
         }
+
+#endif
 
         protected override void Dispose(bool disposing)
         {
@@ -351,6 +355,8 @@ namespace Ctl
             return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
         }
 
+#if NET451
+
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return ReadAsync(buffer, offset, count, CancellationToken.None).ContinueWith(callback, state);
@@ -360,6 +366,8 @@ namespace Ctl
         {
             return ((Task<int>)asyncResult).Result;
         }
+
+#endif
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

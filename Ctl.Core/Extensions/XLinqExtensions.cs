@@ -99,6 +99,8 @@ namespace Ctl.Extensions
             return source.Attributes(name).Select(y => y.Value).Contains(value, comparer);
         }
 
+#if NETSTANDARD2_0 || NET451
+
         /// <summary>
         /// Adds or updates a child element with a new value, respecting ordering defined by a schema.
         /// </summary>
@@ -204,5 +206,7 @@ namespace Ctl.Extensions
                 throw new InvalidOperationException("Unknown complex schema grouping \"" + xsdGroup.GetType().Name + "\".");
             }
         }
+
+#endif
     }
 }

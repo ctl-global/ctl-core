@@ -10,7 +10,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -24,6 +24,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Ctl.Extensions
 {
@@ -32,6 +33,12 @@ namespace Ctl.Extensions
     /// </summary>
     public static class TypeExtensions
     {
+#if NETSTANDARD1_5 || NET451
+        static char TypeDelimiter => Type.Delimiter;
+#else
+        const char TypeDelimiter = '.';
+#endif
+
         /// <summary>
         /// Retrieves a stream to an embedded resource.
         /// </summary>
@@ -43,7 +50,7 @@ namespace Ctl.Extensions
             if (type == null) throw new ArgumentNullException("type");
             if (fileName == null) throw new ArgumentNullException("fileName");
 
-            return type.Assembly.GetManifestResourceStream(type, fileName);
+            return type.GetTypeInfo().Assembly.GetManifestResourceStream(type.Namespace + TypeDelimiter + fileName);
         }
 
         /// <summary>

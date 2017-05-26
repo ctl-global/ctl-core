@@ -9,7 +9,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -315,7 +315,7 @@ namespace Ctl
                 columnNames[i] = info[i].Name;
 
                 Type memberBaseType = Nullable.GetUnderlyingType(info[i].MemberType) ?? info[i].MemberType;
-                Type enumBaseType = memberBaseType.IsEnum ? Enum.GetUnderlyingType(memberBaseType) : null;
+                Type enumBaseType = memberBaseType.GetTypeInfo().IsEnum ? Enum.GetUnderlyingType(memberBaseType) : null;
 
                 MethodInfo getMethod;
 
@@ -358,7 +358,7 @@ namespace Ctl
 
                 readBody.Add(Expression.Assign(indexVar, Expression.ArrayIndex(indexesParam, Expression.Constant(i))));
 
-                if (info[i].Member.GetCustomAttribute<RequiredAttribute>() != null || (info[i].MemberType.IsValueType && (info[i].MemberType == memberBaseType)))
+                if (info[i].Member.GetCustomAttribute<RequiredAttribute>() != null || (info[i].MemberType.GetTypeInfo().IsValueType && (info[i].MemberType == memberBaseType)))
                 {
                     // required field: throw if it's null or not returned.
 

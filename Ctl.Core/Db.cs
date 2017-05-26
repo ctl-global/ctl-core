@@ -40,6 +40,7 @@ namespace Ctl
     /// </summary>
     public static class Db
     {
+#if !NETSTANDARD1_4
         /// <summary>
         /// Creates a new connection using a connection string from the application's configuration.
         /// </summary>
@@ -107,7 +108,7 @@ namespace Ctl
                 throw;
             }
         }
-
+#endif
 
         /// <summary>
         /// Executes a command and reads its first result set into a list.

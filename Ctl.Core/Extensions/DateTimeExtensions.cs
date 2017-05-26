@@ -49,11 +49,10 @@ namespace Ctl.Extensions
             toDate = ClampForward(toDate, holidayProvider);
 
             long ticks = toDate.Ticks - fromDate.Ticks;
-
             long weeks;
-            weeks = Math.DivRem(ticks, TimeSpan.TicksPerDay * 7, out ticks);
 
-            ticks += TimeSpan.TicksPerDay * 5 * weeks;
+            weeks = ticks / (TimeSpan.TicksPerDay * 7);
+            ticks = ticks % (TimeSpan.TicksPerDay * 7) + (TimeSpan.TicksPerDay * 5 * weeks);
 
             if (toDate.DayOfWeek < fromDate.DayOfWeek)
             {
@@ -112,8 +111,8 @@ namespace Ctl.Extensions
                 return date;
             }
 
-            long weeks, ticks;
-            weeks = Math.DivRem(businessDays.Ticks, TimeSpan.TicksPerDay * 5, out ticks);
+            long weeks = businessDays.Ticks / (TimeSpan.TicksPerDay * 5);
+            long ticks = businessDays.Ticks % (TimeSpan.TicksPerDay * 5);
 
             if (weeks != 0)
             {

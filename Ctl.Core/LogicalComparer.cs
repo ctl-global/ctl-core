@@ -9,7 +9,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -37,17 +37,20 @@ namespace Ctl
     {
         static readonly StringComparer currentCulture = new LogicalStringComparer(StringComparer.CurrentCulture);
         static readonly StringComparer currentCultureIgnoreCase = new LogicalStringComparer(StringComparer.CurrentCultureIgnoreCase);
-        static readonly StringComparer invariantCulture = new LogicalStringComparer(StringComparer.InvariantCulture);
-        static readonly StringComparer invariantCultureIgnoreCase = new LogicalStringComparer(StringComparer.InvariantCultureIgnoreCase);
         static readonly StringComparer ordinal = new LogicalStringComparer(StringComparer.Ordinal);
         static readonly StringComparer ordinalIgnoreCase = new LogicalStringComparer(StringComparer.OrdinalIgnoreCase);
 
         public new static StringComparer CurrentCulture { get { return currentCulture; } }
         public new static StringComparer CurrentCultureIgnoreCase { get { return currentCultureIgnoreCase; } }
-        public new static StringComparer InvariantCulture { get { return invariantCulture; } }
-        public new static StringComparer InvariantCultureIgnoreCase { get { return invariantCultureIgnoreCase; } }
         public new static StringComparer Ordinal { get { return ordinal; } }
         public new static StringComparer OrdinalIgnoreCase { get { return ordinalIgnoreCase; } }
+
+#if NET451
+        static readonly StringComparer invariantCulture = new LogicalStringComparer(StringComparer.InvariantCulture);
+        static readonly StringComparer invariantCultureIgnoreCase = new LogicalStringComparer(StringComparer.InvariantCultureIgnoreCase);
+        public new static StringComparer InvariantCulture { get { return invariantCulture; } }
+        public new static StringComparer InvariantCultureIgnoreCase { get { return invariantCultureIgnoreCase; } }
+#endif
 
         readonly StringComparer baseComparer;
 

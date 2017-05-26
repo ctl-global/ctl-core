@@ -119,6 +119,8 @@ namespace Ctl
             }
         }
 
+#if NET451
+
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return WriteAsync(buffer, offset, count).ContinueWith(callback, state);
@@ -129,6 +131,8 @@ namespace Ctl
             if (asyncResult == null) throw new ArgumentNullException("asyncResult");
             ((Task)asyncResult).Wait();
         }
+
+#endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

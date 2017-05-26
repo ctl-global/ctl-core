@@ -1,4 +1,6 @@
-﻿/*
+﻿#if !NETSTANDARD1_4
+
+/*
     Copyright (c) 2014, CTL Global, Inc.
     Copyright (c) 2013, iD Commerce + Logistics
     All rights reserved.
@@ -10,7 +12,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -65,7 +67,7 @@ namespace Ctl.Extensions
                 }
             }
         }
-        
+
 
         /// <summary>
         /// Sends the specified message to a SMTP server for delivery as a cancellable asyncornous operation.
@@ -172,3 +174,5 @@ namespace Ctl.Extensions
         }
     }
 }
+
+#endif

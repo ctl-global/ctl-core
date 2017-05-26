@@ -10,7 +10,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -42,7 +41,6 @@ namespace Ctl.Extensions
         /// Trims leading and trailing whitespace from a string, returning null if the result is empty.
         /// </summary>
         /// <param name="s">A string to trim.</param>
-        [Pure]
         public static string TrimToNull(this string s)
         {
             return string.IsNullOrWhiteSpace(s) ? null : s.Trim();
@@ -55,7 +53,6 @@ namespace Ctl.Extensions
         /// <param name="s">A string to truncate.</param>
         /// <param name="length">The maximum length of the string.</param>
         /// <returns>A new string which has at most <paramref name="length"/> characters.</returns>
-        [Pure]
         public static string TruncateToLength(this string s, int length)
         {
             if (length < 0)
@@ -97,12 +94,12 @@ namespace Ctl.Extensions
             }
         }
 
+#if !NETSTANDARD1_4
         /// <summary>
         /// Converts ligatures and diacritics into their ASCII equivalents.
         /// </summary>
         /// <param name="s">The string to convert.</param>
         /// <returns>A string with as many non-ASCII characters converted as possible</returns>
-        [Pure]
         public static string ToAscii(this string s)
         {
             if (s == null) throw new ArgumentNullException("s");
@@ -140,7 +137,6 @@ namespace Ctl.Extensions
         /// </summary>
         /// <param name="s">The string to strip.</param>
         /// <returns>A string with diacritics removed.</returns>
-        [Pure]
         public static string StripDiacritics(this string s)
         {
             if (s == null) throw new ArgumentNullException("s");
@@ -167,6 +163,7 @@ namespace Ctl.Extensions
 
             return sb.ToString().Normalize();
         }
+#endif
 
         /// <summary>
         /// Tests if one string contains another using a specific comparison type.
@@ -175,7 +172,6 @@ namespace Ctl.Extensions
         /// <param name="needle">The string to search for.</param>
         /// <param name="comparisonType">The type of comparison to perform.</param>
         /// <returns>If <paramref name="haystack"/> contains <paramref name="needle"/>, true. Otherwise, false.</returns>
-        [Pure]
         public static bool Contains(this string haystack, string needle, StringComparison comparisonType)
         {
             if (haystack == null) throw new ArgumentNullException("haystack");
