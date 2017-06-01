@@ -13,6 +13,7 @@
     <PackageIconUrl>http://ctl-global.github.io/ctl-logo-nuget.png</PackageIconUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>core ctl</PackageTags>
+    <PackageVersion>2.0.0.0</PackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>NETSTANDARD1_4;NETSTANDARD1_5;NETSTANDARD1_6;$(DefineConstants)</DefineConstants>
