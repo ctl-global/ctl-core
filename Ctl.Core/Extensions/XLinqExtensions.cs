@@ -10,7 +10,7 @@
     and the following disclaimer. Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the documentation and/or other
     materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
     FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -24,7 +24,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
@@ -35,6 +38,29 @@ namespace Ctl.Extensions
     /// </summary>
     public static class XLinqExtensions
     {
+        public static IEnumerable<XNode> ToXNodes(this SqlXml xml)
+        {
+            if (xml?.IsNull != false)
+            {
+                yield break;
+            }
+
+            var settings = new XmlReaderSettings
+            {
+                ConformanceLevel = ConformanceLevel.Fragment,
+                IgnoreWhitespace = true
+            };
+
+            using (var stringReader = new StringReader(xml.Value))
+            using (var xmlReader = XmlReader.Create(stringReader, settings))
+            {
+                while (xmlReader.ReadState != ReadState.EndOfFile)
+                {
+                    yield return XNode.ReadFrom(xmlReader);
+                }
+            }
+        }
+
         /// <summary>
         /// Filters source elements, returning only those which have an attribute with a specific value.
         /// </summary>
