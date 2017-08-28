@@ -8,12 +8,13 @@
     <Description>A collection of core utilities and extensions applicable for most projects.</Description>
     <Company>CTL Global, Inc.</Company>
     <Product>Ctl.Core</Product>
-    <Copyright>Copyright © CTL Global, Inc. 2014</Copyright>
+    <Copyright>Copyright © CTL Global, Inc. 2017</Copyright>
 
     <PackageIconUrl>http://ctl-global.github.io/ctl-logo-nuget.png</PackageIconUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>core ctl</PackageTags>
-    <PackageVersion>2.0.0.0</PackageVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.0.1.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>NETSTANDARD1_4;NETSTANDARD1_5;NETSTANDARD1_6;$(DefineConstants)</DefineConstants>
@@ -24,12 +25,17 @@
   <ItemGroup>
     <PackageReference Include="System.Interactive" Version="3.1.1" />
     <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.1" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' And '$(TargetFramework)' != 'net46' ">
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" Condition=" '$(TargetFramework)' != 'net451' " />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' Or '$(TargetFramework)' == 'net46' ">
+    <Reference Include="System.Data" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Diagnostics.Contracts" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Management" />
   </ItemGroup>
