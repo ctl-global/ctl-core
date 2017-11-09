@@ -38,6 +38,11 @@ namespace Ctl.Extensions
     /// </summary>
     public static class XLinqExtensions
     {
+        /// <summary>
+        /// Converts a SqlXml response into zero or more XNodes.
+        /// </summary>
+        /// <param name="xml">The SqlXml to convert.</param>
+        /// <returns>Zero or more XNodes pertaining to the SqlXml.</returns>
         public static IEnumerable<XNode> ToXNodes(this SqlXml xml)
         {
             if (xml?.IsNull != false)
