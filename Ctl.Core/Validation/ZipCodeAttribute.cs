@@ -38,9 +38,24 @@ namespace Ctl.Validation
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
     public class ZipCodeAttribute : UspsValidationAttribute
     {
+        readonly Regex re;
+
+        /// <summary>
+        /// Instantiates a zip code validator.
+        /// </summary>
         public ZipCodeAttribute()
+            : this(false)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a zip code validator, optionally relaxing validation rules to handle integer zip codes.
+        /// </summary>
+        /// <param name="assumeLeadingZeroes">If true, zip codes with less than 5 digits will be assumed to have five digits.</param>
+        public ZipCodeAttribute(bool assumeLeadingZeroes)
             : base("Field {0} must be a zip code in format XXXXX or XXXXX-XXXX.")
         {
+            re = assumeLeadingZeroes ? reWithLeadingZeros : reStrict;
         }
 
         public override bool IsValid(object value)
@@ -60,6 +75,7 @@ namespace Ctl.Validation
             return re.IsMatch(s);
         }
 
-        static readonly Regex re = new Regex(@"^\d{5}(?:(?:-|‒)?\d{4})?$", RegexOptions.Compiled);
+        static readonly Regex reStrict = new Regex(@"^\d{5}(?:(?:-|‒)?\d{4})?$", RegexOptions.Compiled);
+        static readonly Regex reWithLeadingZeros = new Regex(@"^(?:(?:\d{5}(?:(?:-|‒)?\d{4})?)|\d{1,4})$", RegexOptions.Compiled);
     }
 }
