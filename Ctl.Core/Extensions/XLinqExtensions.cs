@@ -39,34 +39,6 @@ namespace Ctl.Extensions
     public static class XLinqExtensions
     {
         /// <summary>
-        /// Converts a SqlXml response into zero or more XNodes.
-        /// </summary>
-        /// <param name="xml">The SqlXml to convert.</param>
-        /// <returns>Zero or more XNodes pertaining to the SqlXml.</returns>
-        public static IEnumerable<XNode> ToXNodes(this SqlXml xml)
-        {
-            if (xml?.IsNull != false)
-            {
-                yield break;
-            }
-
-            var settings = new XmlReaderSettings
-            {
-                ConformanceLevel = ConformanceLevel.Fragment,
-                IgnoreWhitespace = true
-            };
-
-            using (var stringReader = new StringReader(xml.Value))
-            using (var xmlReader = XmlReader.Create(stringReader, settings))
-            {
-                while (xmlReader.ReadState != ReadState.EndOfFile)
-                {
-                    yield return XNode.ReadFrom(xmlReader);
-                }
-            }
-        }
-
-        /// <summary>
         /// Filters source elements, returning only those which have an attribute with a specific value.
         /// </summary>
         /// <param name="source">The elements to filter.</param>
