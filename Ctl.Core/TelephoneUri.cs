@@ -45,6 +45,9 @@ namespace Ctl
         /// <summary>
         /// The phone's extension number.
         /// </summary>
+        /// <remarks>
+        /// The extension number is specified through the 'ext' parameter, and is mutually exclusive with specifying an ISDN sub-address.
+        /// </remarks>
         public string Extension
         {
             get => extension;
@@ -57,6 +60,9 @@ namespace Ctl
         /// <summary>
         /// The number's ISDN sub-address.
         /// </summary>
+        /// <remarks>
+        /// The ISDN sub-address is specified through the 'isub' parameter, and is mutually exclusive with specifying an extension.
+        /// </remarks>
         public string IsdnSubaddress
         {
             get => isdnSubaddress;
@@ -69,7 +75,10 @@ namespace Ctl
         /// <summary>
         /// The local number's context.
         /// </summary>
-        public string Context
+        /// <remarks>
+        /// The local context is specified through the 'phone-context' parameter, and must be specified if the phone number is local.
+        /// </remarks>
+        public string LocalContext
         {
             get => context;
             set
@@ -112,14 +121,14 @@ namespace Ctl
                 validationErrors.Append(error);
             }
 
-            if (!IsGlobalNumber && string.IsNullOrEmpty(Context))
+            if (!IsGlobalNumber && string.IsNullOrEmpty(LocalContext))
             {
-                AddError($"The {nameof(Number)} property contains a local number, requiring the {nameof(Context)} property to be filled.");
+                AddError($"The {nameof(Number)} property contains a local number, requiring the {nameof(LocalContext)} property to be filled.");
             }
 
-            if (IsGlobalNumber && !string.IsNullOrEmpty(Context))
+            if (IsGlobalNumber && !string.IsNullOrEmpty(LocalContext))
             {
-                AddError($"The {nameof(Number)} property contains a global number, requiring the {nameof(Context)} property to be null.");
+                AddError($"The {nameof(Number)} property contains a global number, requiring the {nameof(LocalContext)} property to be null.");
             }
 
             if (!string.IsNullOrEmpty(Extension) && !string.IsNullOrEmpty(IsdnSubaddress))
@@ -146,9 +155,9 @@ namespace Ctl
                 sb.Append(";isub=").Append(IsdnSubaddress);
             }
 
-            if (!string.IsNullOrEmpty(Context))
+            if (!string.IsNullOrEmpty(LocalContext))
             {
-                sb.Append(";phone-context=").Append(Context);
+                sb.Append(";phone-context=").Append(LocalContext);
             }
 
             foreach (var kvp in parameters)
@@ -258,7 +267,7 @@ namespace Ctl
                     AddError("URI must have at most one local context.");
                 }
 
-                newUri.Context = context.Value;
+                newUri.LocalContext = context.Value;
             }
 
             foreach (Capture c in m.Groups["gparam"].Captures)
@@ -286,12 +295,12 @@ namespace Ctl
                 }
             }
 
-            if (gnum.Success == false && newUri.Context == null)
+            if (gnum.Success == false && newUri.LocalContext == null)
             {
                 AddError("Local URIs must have a context.");
             }
 
-            if (gnum.Success == true && newUri.Context != null)
+            if (gnum.Success == true && newUri.LocalContext != null)
             {
                 AddError("Global URIs must not have a local context.");
             }
@@ -341,14 +350,14 @@ namespace Ctl
 
             string uri = $"^tel:(?:(?<gnum>{globalNumber})|(?<lnum>{localNumber}))(?:;(?:{anyParameter}))*$";
 
-            parseRe = new Regex(uri, RegexOptions.Compiled);
-            parseGenericParam = new Regex(genericParameterWithNames, RegexOptions.Compiled);
-            validateNumberRe = new Regex($"^(?:{globalNumber})|(?:{localNumber})$", RegexOptions.Compiled);
-            validateParameterNameRe = new Regex($"^{genericParameterName}$", RegexOptions.Compiled);
-            validateParameterValueRe = new Regex($"^{genericParameterValue}$", RegexOptions.Compiled);
-            validateIsdnSubAddressRe = new Regex($"^{isdnSubAddressValue}$", RegexOptions.Compiled);
-            validateExtensionRe = new Regex($"^{extensionValue}$", RegexOptions.Compiled);
-            validateContextRe = new Regex($"^{contextValue}$", RegexOptions.Compiled);
+            parseRe = new Regex(uri, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            parseGenericParam = new Regex(genericParameterWithNames, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateNumberRe = new Regex($"^(?:{globalNumber})|(?:{localNumber})$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateParameterNameRe = new Regex($"^{genericParameterName}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateParameterValueRe = new Regex($"^{genericParameterValue}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateIsdnSubAddressRe = new Regex($"^{isdnSubAddressValue}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateExtensionRe = new Regex($"^{extensionValue}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            validateContextRe = new Regex($"^{contextValue}$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 
         sealed class ParameterCollection : SortedDictionary<string, string>, IDictionary<string, string>, ICollection<KeyValuePair<string, string>>
@@ -363,18 +372,47 @@ namespace Ctl
                 if (key == null) throw new ArgumentNullException(nameof(key));
 
                 bool badKey = !validateParameterNameRe.IsMatch(key);
+
+                string parameterToUse;
+
+                switch (key.ToLowerInvariant())
+                {
+                    case "ext":
+                        parameterToUse = nameof(Extension);
+                        break;
+                    case "isub":
+                        parameterToUse = nameof(IsdnSubaddress);
+                        break;
+                    case "phone-context":
+                        parameterToUse = nameof(LocalContext);
+                        break;
+                    default:
+                        parameterToUse = null;
+                        break;
+                }
+
                 bool badValue = !string.IsNullOrEmpty(value) && !validateParameterValueRe.IsMatch(value);
 
-                if (badKey || badValue)
+                if (badKey || parameterToUse != null || badValue)
                 {
                     StringBuilder sb = new StringBuilder("The parameter is invalid: ");
 
-                    if (badKey) sb.Append($"the key '{nameof(key)}' is malformed.");
-
-                    if (badValue)
+                    if (parameterToUse != null)
                     {
-                        if (badKey) sb.Append(", ");
-                        sb.Append($"the value '{nameof(value)}' is malformed.");
+                        sb.Append($"the key '{nameof(key)}' must be added through the {parameterToUse} parameter.");
+                    }
+                    else
+                    {
+                        if (badKey)
+                        {
+                            sb.Append($"the key '{nameof(key)}' is malformed.");
+                        }
+
+                        if (badValue)
+                        {
+                            if (badKey) sb.Append(", ");
+                            sb.Append($"the value '{nameof(value)}' is malformed.");
+                        }
                     }
 
                     throw new ArgumentException(sb.ToString());
