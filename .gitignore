@@ -8,3 +8,4 @@ obj
 /packages/*
 !/packages/repositories.config
 /.vs
+/Ctl.Core/Ctl.Core.xml
