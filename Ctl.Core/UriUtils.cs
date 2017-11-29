@@ -1,4 +1,4 @@
-﻿#if !NET451
+﻿#if NET46 || NETSTANDARD1_4
 
 using System;
 using System.Collections.Generic;
