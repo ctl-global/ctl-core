@@ -295,6 +295,118 @@ namespace Ctl.Extensions
         }
 
         /// <summary>
+        /// Splits a string into lines of a specified maximum character length, breaking on whitespace.
+        /// </summary>
+        /// <param name="str">The string to split.</param>
+        /// <param name="lineLength">The maximum character length of each line.</param>
+        /// <param name="ellipsis">
+        ///    If true, words that are too large for a single line will be split and have two ellipsis inserted between the parts. so "longword" becomes "long...\n...word".
+        ///    If false, an exception is thrown.
+        ///    Exceptions may be thrown regardless if a single grapheme cluster is too large to fit into a line.
+        /// </param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitToLines(this string str, int lineLength, bool ellipsis = true)
+        {
+            if (str == null) throw new ArgumentNullException(nameof(str));
+            if (lineLength < (ellipsis ? 3 : 1)) throw new ArgumentOutOfRangeException(nameof(lineLength), $"{nameof(lineLength)} must be greater or equal to {(ellipsis ? 3 : 1)}.");
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var tok in Tokenize(str, (s, idx) => Char.IsWhiteSpace(s, idx)))
+            {
+                int newLen = sb.Length + (sb.Length != 0 ? 1 : 0) + tok.Length;
+
+                if (newLen <= lineLength)
+                {
+                    // append to existing line.
+
+                    if (sb.Length != 0)
+                    {
+                        sb.Append(' ');
+                    }
+
+                    sb.Append(tok);
+                    continue;
+                }
+
+                if(sb.Length > 0)
+                {
+                    // not enough space, yield existing line first.
+                    yield return sb.ToString();
+                    sb.Clear();
+                }
+
+                if (tok.Length < (lineLength - 1))
+                {
+                    // have enough space now, append to existing line.
+                    sb.Append(tok);
+                    continue;
+                }
+
+                if (tok.Length >= (lineLength - 1) && tok.Length <= lineLength)
+                {
+                    // the token takes up an entire line -- just yield it directly.
+                    yield return tok;
+                    continue;
+                }
+
+                // the token is too large for a line. it will need to be split, with ellipsis inserted.
+                // this will split e.g. "foobarbaz" into:
+                // foo…
+                // …bar…
+                // …baz
+
+                if (!ellipsis) throw new Exception($"The given string has a {tok.Length:N0} character token that will not fit into the {lineLength:N0} character maximum line length.");
+
+                for (int i = 0; i < tok.Length;)
+                {
+                    int partLen = 0;
+                    int clusterLen = 0;
+
+                    for (int j = i; j < tok.Length; j += clusterLen)
+                    {
+                        clusterLen = Unicode.GetGraphemeClusterLength(tok, j);
+                        int newPartLen = partLen + clusterLen;
+
+                        if (newPartLen > (lineLength - 2))
+                        {
+                            break;
+                        }
+
+                        partLen = newPartLen;
+                    }
+
+                    if (partLen == 0)
+                    {
+                        throw new Exception($"The given string has a {tok.Length:N0} character token with a {clusterLen:N0} character grapheme cluster that will not fit into the {lineLength:N0} character maximum line length.");
+                    }
+
+                    string tokSplit = tok.Substring(i, partLen);
+
+                    if (i != 0)
+                    {
+                        // if this isn't the first token, prepend an ellipsis.
+                        tokSplit = "…" + tokSplit;
+                    }
+
+                    if ((i + partLen) != tok.Length)
+                    {
+                        // if this isn't the last token, append an ellipsis.
+                        tokSplit = tokSplit + "…";
+                    }
+
+                    yield return tokSplit;
+                    i += partLen;
+                }
+            }
+
+            if (sb.Length != 0)
+            {
+                yield return sb.ToString();
+            }
+        }
+
+        /// <summary>
         /// Capitalizes the first letter of a string using the current culture, and lowercase the rest of it.
         /// </summary>
         /// <param name="s">The string to capitalize.</param>
