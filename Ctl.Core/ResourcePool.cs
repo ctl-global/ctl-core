@@ -220,6 +220,67 @@ namespace Ctl
         }
 
         /// <summary>
+        /// Executes an action against a pooled item, then returns the item to the pool.
+        /// </summary>
+        /// <param name="func">The action to execute.</param>
+        public void Execute(Action<T> func)
+        {
+            if (func == null) throw new ArgumentNullException(nameof(func));
+
+            using (var res = Get())
+            {
+                func(res.Value);
+            }
+        }
+
+        /// <summary>
+        /// Executes a function against a pooled item, then returns the item to the pool.
+        /// </summary>
+        /// <param name="func">The function to execute.</param>
+        /// <returns>The result of the function.</returns>
+        public TResult Execute<TResult>(Func<T, TResult> func)
+        {
+            if (func == null) throw new ArgumentNullException(nameof(func));
+
+            using (var res = Get())
+            {
+                return func(res.Value);
+            }
+        }
+
+        /// <summary>
+        /// Executes an action against a pooled item, then returns the item to the pool.
+        /// </summary>
+        /// <param name="func">The action to execute.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>A task representing the async operation.</returns>
+        public async Task ExecuteAsync(Func<T, Task> func, CancellationToken token)
+        {
+            if (func == null) throw new ArgumentNullException(nameof(func));
+
+            using (var res = (getItemFunc != null ? Get() : await GetAsync(token).ConfigureAwait(false)))
+            {
+                await func(res.Value).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Executes a function against a pooled item, then returns the item to the pool.
+        /// </summary>
+        /// <param name="func">The function to execute.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <returns>The result of the function.</returns>
+        public async Task<TResult> ExecuteAsync<TResult>(Func<T, Task<TResult>> func, CancellationToken token)
+        {
+            if (func == null) throw new ArgumentNullException(nameof(func));
+
+            using (var res = (getItemFunc != null ? Get() : await GetAsync(token).ConfigureAwait(false)))
+            {
+                return await func(res.Value).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
         /// A handle to a pooled resource.
         /// </summary>
         public struct PooledResource : IDisposable
