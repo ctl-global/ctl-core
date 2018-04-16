@@ -205,5 +205,27 @@ namespace Ctl.Extensions
                 date = date.AddTicks(TimeSpan.TicksPerDay);
             }
         }
+
+        /// <summary>
+        /// Reinterprets a DateTime as local time.
+        /// </summary>
+        /// <remarks>
+        /// Primarily intended to be used when reading a DateTime from a database, as their Kind is ambiguous.
+        /// </remarks>
+        public static DateTime AsLocal(this DateTime date)
+        {
+            return new DateTime(date.Ticks, DateTimeKind.Local);
+        }
+
+        /// <summary>
+        /// Reinterprets a DateTime as universal time.
+        /// </summary>
+        /// <remarks>
+        /// Primarily intended to be used when reading a DateTime from a database, as their Kind is ambiguous.
+        /// </remarks>
+        public static DateTime AsUniversal(this DateTime date)
+        {
+            return new DateTime(date.Ticks, DateTimeKind.Utc);
+        }
     }
 }
