@@ -14,9 +14,9 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>core ctl</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>3.0.0.0</Version>
+    <Version>3.0.1.0</Version>
     <RootNamespace>Ctl</RootNamespace>
-    <DocumentationFile>Ctl.Core.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
@@ -28,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="System.Interactive" Version="3.1.1" />
     <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' And '$(TargetFramework)' != 'net46' ">
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
