@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -145,5 +146,64 @@ namespace Ctl
         }
 
 #endif
+
+        /// <summary>
+        /// Defers an async function until enumeration.
+        /// </summary>
+        /// <typeparam name="T">The type of collection returned by the deferred function.</typeparam>
+        /// <param name="func">The function to defer.</param>
+        /// <returns>A collection of objects created by the deferred function.</returns>
+        public static IAsyncEnumerable<T> Defer<T>(Func<CancellationToken, ValueTask<T>> func)
+        {
+            if (func == null) throw new ArgumentNullException(nameof(func));
+            return new DeferEnumerable<T>(func);
+        }
+
+        sealed class DeferEnumerable<T> : IAsyncEnumerable<T>
+        {
+            readonly Func<CancellationToken, ValueTask<T>> func;
+
+            public DeferEnumerable(Func<CancellationToken, ValueTask<T>> func)
+            {
+                Debug.Assert(func != null);
+                this.func = func;
+            }
+
+            public IAsyncEnumerator<T> GetEnumerator()
+            {
+                return new DeferEnumerator<T>(func);
+            }
+        }
+
+        sealed class DeferEnumerator<T> : IAsyncEnumerator<T>
+        {
+            Func<CancellationToken, ValueTask<T>> func;
+
+            public DeferEnumerator(Func<CancellationToken, ValueTask<T>> func)
+            {
+                Debug.Assert(func != null);
+                this.func = func;
+            }
+
+            public T Current { get; private set; }
+
+            public void Dispose()
+            {
+                func = null;
+            }
+
+            public async Task<bool> MoveNext(CancellationToken cancellationToken)
+            {
+                if (func == null)
+                {
+                    Current = default;
+                    return false;
+                }
+
+                Current = await func(cancellationToken).ConfigureAwait(false);
+                func = null;
+                return true;
+            }
+        }
     }
 }
