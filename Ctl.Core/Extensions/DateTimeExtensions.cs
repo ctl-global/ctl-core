@@ -12,6 +12,19 @@ namespace Ctl.Extensions
     public static class DateTimeExtensions
     {
         /// <summary>
+        /// Moves a date forward until it hits a specific day of week.
+        /// If the date is already on that date, it is returned unchanged.
+        /// </summary>
+        /// <param name="fromDate">The date to compute from.</param>
+        /// <param name="dayOfWeek">The day of week to return.</param>
+        /// <returns>A date adjusted forward to a specific day of week.</returns>
+        public static DateTime Next(this DateTime fromDate, DayOfWeek dayOfWeek)
+        {
+            int adjust = ((int)dayOfWeek - (int)fromDate.DayOfWeek + 7) % 7;
+            return fromDate.AddDays(adjust);
+        }
+
+        /// <summary>
         /// Adds days to a date.
         /// </summary>
         /// <param name="fromDate">The date to add days to.</param>

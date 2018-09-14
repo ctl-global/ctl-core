@@ -110,5 +110,26 @@ namespace Ctl
                 return (x << 5) + 3 + x ^ y;
             }
         }
+
+
+        /// <summary>
+        /// Hashes a string in UTF-8 form using FarmHash's 64-bit variant.
+        /// </summary>
+        /// <param name="data">The string to hash.</param>
+        /// <returns>The string's hash.</returns>
+        public static long FarmHash64(ReadOnlySpan<char> data)
+        {
+            return (long)FarmHash.Hash64(data);
+        }
+
+        /// <summary>
+        /// Hashes data using FarmHash's 64-bit variant.
+        /// </summary>
+        /// <param name="data">The data to hash.</param>
+        /// <returns>The data's hash.</returns>
+        public static long FarmHash64(ReadOnlySpan<byte> data)
+        {
+            return (long)FarmHash.Hash64(data);
+        }
     }
 }

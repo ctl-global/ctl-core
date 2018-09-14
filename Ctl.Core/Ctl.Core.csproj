@@ -14,10 +14,11 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>core ctl</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>3.1.1.0</Version>
+    <Version>3.1.2.0</Version>
     <RootNamespace>Ctl</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <DefineConstants>NETSTANDARD1_4;NETSTANDARD1_5;NETSTANDARD1_6;$(DefineConstants)</DefineConstants>
@@ -28,6 +29,7 @@
   <ItemGroup>
     <PackageReference Include="System.Interactive" Version="3.1.1" />
     <PackageReference Include="System.Interactive.Async" Version="3.1.1" />
+    <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.1" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
