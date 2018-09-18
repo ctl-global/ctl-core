@@ -27,12 +27,12 @@ namespace Ctl
 
             // this stuff is here because GetByteCount/GetBytes to operate on spans does not exist in .NET Standard.
 
-            fixed (char* pstr = &MemoryMarshal.GetReference(data))
+            fixed (char* pstr = data)
             {
                 int encodedLen = Encoding.UTF8.GetByteCount(pstr, data.Length);
                 Span<byte> utf8 = encodedLen <= 64 ? stackalloc byte[encodedLen] : new byte[encodedLen];
 
-                fixed (byte* putf8 = &MemoryMarshal.GetReference(utf8))
+                fixed (byte* putf8 = utf8)
                 {
                     Encoding.UTF8.GetBytes(pstr, data.Length, putf8, encodedLen);
                 }
