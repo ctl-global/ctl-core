@@ -37,6 +37,68 @@ namespace Ctl.Extensions
     public static class EnumerableExtensions
     {
         /// <summary>
+        /// Performs a full outer join between two collections.
+        /// </summary>
+        public static IEnumerable<TResult> FullOuterJoin<TOuterA, TOuterB, TKey, TResult>(this IEnumerable<TOuterA> outerAs, IEnumerable<TOuterB> outerBs, Func<TOuterA, TKey> getKeyA, Func<TOuterB, TKey> getKeyB, Func<TOuterA, TOuterB, TResult> resultSelector, IEqualityComparer<TKey> comparer = null)
+        {
+            if (outerAs == null) throw new ArgumentNullException(nameof(outerAs));
+            if (outerBs == null) throw new ArgumentNullException(nameof(outerBs));
+            if (getKeyA == null) throw new ArgumentNullException(nameof(getKeyA));
+            if (getKeyB == null) throw new ArgumentNullException(nameof(getKeyB));
+            if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+            if (comparer == null) comparer = EqualityComparer<TKey>.Default;
+
+            return EnumerableEx.Defer(work);
+
+            IEnumerable<TResult> work()
+            {
+                var dictionaryB = new Dictionary<TKey, List<TOuterB>>(comparer);
+                var remainingKeysB = new HashSet<TKey>(comparer);
+
+                foreach (TOuterB b in outerBs)
+                {
+                    TKey key = getKeyB(b);
+
+                    if (!dictionaryB.TryGetValue(key, out List<TOuterB> values))
+                    {
+                        values = new List<TOuterB>();
+                        dictionaryB.Add(key, values);
+                        remainingKeysB.Add(key);
+                    }
+
+                    values.Add(b);
+                }
+
+                foreach (TOuterA a in outerAs)
+                {
+                    TKey key = getKeyA(a);
+
+                    if (dictionaryB.TryGetValue(key, out List<TOuterB> values))
+                    {
+                        remainingKeysB.Remove(key);
+
+                        foreach (TOuterB b in values)
+                        {
+                            yield return resultSelector(a, b);
+                        }
+                    }
+                    else
+                    {
+                        yield return resultSelector(a, default);
+                    }
+                }
+
+                foreach (TKey key in remainingKeysB)
+                {
+                    foreach (TOuterB b in dictionaryB[key])
+                    {
+                        yield return resultSelector(default, b);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Simultaneously retreieves the minimum and maximum element from a sequence.
         /// </summary>
         /// <typeparam name="T">The type of item in the sequence.</typeparam>
